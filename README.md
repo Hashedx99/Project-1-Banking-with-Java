@@ -1,4 +1,4 @@
-# Project-1-Banking-with-Java
+# Project-1: Banking with Java
 
 ## Project overview
 this project is creating a simple command-line banking application.
