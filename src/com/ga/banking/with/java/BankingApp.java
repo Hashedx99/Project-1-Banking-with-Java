@@ -18,10 +18,10 @@ import java.util.Scanner;
 import java.util.stream.Stream;
 
 public class BankingApp {
-    private static BankerFileHandler bankerFileHandler = new BankerFileHandler();
+    private static final BankerFileHandler bankerFileHandler = new BankerFileHandler();
 
     public static void main(String[] args) {
-        Session session = null;
+        Session session = new Session();
         Path dataPath = Paths.get("Data");
         Path bankersPath = dataPath.resolve("Bankers");
         Path customersPath = dataPath.resolve("Customers");
@@ -37,12 +37,14 @@ public class BankingApp {
 
 
         if (shouldPromptForBankerCreation) {
-            session = firstSystemBootProcess();
+            session.initializeSession(acquireFirstEverSession());
         } else {
             Scanner input = new Scanner(System.in);
-            boolean customersPathNotExistingOrCustomerPathExistsButEmpty = !Files.exists(customersPath) ||
-                    (Files.exists(customersPath) &&
-                            (customersPath.toFile().listFiles() == null || Objects.requireNonNull(customersPath.toFile().listFiles()).length == 0));
+
+            File[] customerFiles = (Files.exists(customersPath) && Files.isDirectory(customersPath))
+                    ? customersPath.toFile().listFiles()
+                    : null;
+            boolean customersPathMissingOrEmpty = customerFiles == null || customerFiles.length == 0;
             System.out.println("Please log in to continue.");
             CommonUtil.printSeparatorLine();
             System.out.println("Enter your username: ");
@@ -51,8 +53,7 @@ public class BankingApp {
             System.out.println("Enter your password: ");
             String password = input.nextLine();
             CommonUtil.printSeparatorLine();
-
-            if (customersPathNotExistingOrCustomerPathExistsButEmpty) {
+            if (customersPathMissingOrEmpty) {
                 if (bankersPath.toFile().listFiles() == null) {
                     throw new RuntimeException("Banker files are missing.");
                 }
@@ -67,22 +68,22 @@ public class BankingApp {
                             Banker tmpBanker = (Banker) bankerFileHandler.readFromFile(file);
                             return PasswordHasher.validatePassword(password, tmpBanker.getSalt(),
                                     tmpBanker.getPasswordHash());
-                        }).findFirst().map(file -> bankerFileHandler.readFromFile(file)).orElseGet(() -> {
-                            throw new RuntimeException("Invalid username or password.");
-                        });
-                session = new Session(banker);
+                        }).findFirst().map(bankerFileHandler::readFromFile)
+                                .orElseThrow(() -> new RuntimeException("Invalid username or password."));
+                session.initializeSession(banker);
 
-            } else {
-                if (customersPath.toFile().listFiles() == null) {
-                    throw new RuntimeException("Customer files are missing.");
-                }
-                Stream<File> fileStream =
-                        Arrays.stream(Objects.requireNonNull(customersPath.toFile().listFiles(file -> file.getName().split(
-                                "-")[1].equals(username))));
-                if (fileStream.count() > 1) {
-                    throw new RuntimeException("Customer files are duplicated.");
-                }
             }
+
+            if (customersPath.toFile().listFiles() == null) {
+                throw new RuntimeException("Customer files are missing.");
+            }
+            Stream<File> fileStream =
+                    Arrays.stream(Objects.requireNonNull(customersPath.toFile().listFiles(file -> file.getName().split(
+                            "-")[1].equals(username))));
+            if (fileStream.count() > 1) {
+                throw new RuntimeException("Customer files are duplicated.");
+            }
+
 
         }
 
@@ -94,7 +95,7 @@ public class BankingApp {
 //                "Password is valid!" : "Invalid Password!");
     }
 
-    private static Session firstSystemBootProcess() {
+    private static Banker acquireFirstEverSession() {
         byte[] salt = PasswordHasher.generateSalt();
         Scanner input = new Scanner(System.in);
         System.out.println("No bankers found in the system. Please create the first banker account.");
@@ -123,6 +124,6 @@ public class BankingApp {
         bankerFileHandler.writeToFile(banker.getUsername(), banker.getUserId(),
                 objectMapper.writeValueAsString(banker));
         System.out.println("Banker account created successfully! You are now logged in as " + banker.getFirstName() + " " + banker.getLastName());
-        return new Session(banker);
+        return banker;
     }
 }
