@@ -2,6 +2,8 @@ package com.ga.banking.with.java.helpers;
 
 import com.ga.banking.with.java.interfaces.FileHandler;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,10 +21,16 @@ public class BankerFileHandler implements FileHandler {
     @Override
     public boolean writeToFile(String bankerName, String bankerId, String fileContent) {
         try {
-            String fileName = "Bankers/Banker-" + bankerName + "-" + bankerId + ".json";
-            Path workingPath = Paths.get(System.getProperty("user.dir"), "Bankers", fileName);
-            Files.createDirectories(workingPath);
-            Files.writeString(workingPath, fileContent);
+            String fileName = "Banker-" + bankerName + "-" + bankerId + ".json";
+            Path path = Paths.get("Bankers", fileName);
+            Path parent = path.getParent();
+            if (parent != null && Files.notExists(parent)) {
+                Files.createDirectories(parent);
+            }
+
+            try (BufferedWriter writer = Files.newBufferedWriter(path)) {
+                writer.write(fileContent);
+            }
         } catch (Exception e) {
             System.out.println("An error occurred while writing to the banker file.");
             e.printStackTrace();

@@ -91,8 +91,15 @@ public class User {
         return passwordHash;
     }
 
-    @Override
-    public String toString() {
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String toJson() {
         return "{" +
                 "\"userId\": \"" + userId + "\"," +
                 "\"firstName\": \"" + firstName + "\"," +
