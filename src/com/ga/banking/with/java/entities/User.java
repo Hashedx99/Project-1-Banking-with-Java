@@ -19,6 +19,7 @@ public class User {
     private LocalDate createdAt;
     private UserRole role;
     private Status status;
+    private String salt;
 
 
     public User(String firstName, String lastName, String userName, String passwordHash, String email,
@@ -88,6 +89,25 @@ public class User {
 
     public String getPasswordHash() {
         return passwordHash;
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "\"userId\": \"" + userId + "\"," +
+                "\"firstName\": \"" + firstName + "\"," +
+                "\"lastName\": \"" + lastName + "\"," +
+                "\"username\": \"" + username + "\"," +
+                "\"passwordHash\": \"" + passwordHash + "\"," +
+                "\"email\": \"" + email + "\"," +
+                "\"phoneNumber\": \"" + phoneNumber + "\"," +
+                "\"failedAttempts\": " + failedAttempts + "," +
+                "\"lockUntil\": \"" + (lockUntil != null ? lockUntil : "null") + "\"," +
+                "\"createdAt\": \"" + createdAt + "\"," +
+                "\"role\": \"" + role + "\"," +
+                "\"status\": \"" + status + "\"," +
+                "\"salt\": \"" + salt + "\"" +
+                "}";
     }
 
 }
