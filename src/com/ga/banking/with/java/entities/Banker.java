@@ -4,9 +4,11 @@ import com.ga.banking.with.java.enums.UserRole;
 
 public class Banker extends User {
 
-    public Banker(String firstName, String lastName, String userName, String password, String email,
+    public Banker(String firstName, String lastName, String userName, String password, byte[] salt, String email,
                   String phoneNumber) {
-        super(firstName, lastName, userName, password, email, phoneNumber, UserRole.Banker);
+        super(firstName, lastName, userName, password, salt, email, phoneNumber, UserRole.Banker);
     }
+
+
 
 }

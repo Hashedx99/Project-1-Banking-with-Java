@@ -1,5 +1,7 @@
 package com.ga.banking.with.java.entities;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ga.banking.with.java.enums.Status;
 import com.ga.banking.with.java.enums.UserRole;
 
@@ -19,11 +21,18 @@ public class User {
     private LocalDate createdAt;
     private UserRole role;
     private Status status;
-    private String salt;
+    private byte[] salt;
 
-
-    public User(String firstName, String lastName, String userName, String passwordHash, String email,
-                  String phoneNumber, UserRole role) {
+    @JsonCreator
+    public User(
+            @JsonProperty("firstName") String firstName,
+            @JsonProperty("lastName") String lastName,
+            @JsonProperty("username") String userName,
+            @JsonProperty("passwordHash") String passwordHash,
+            @JsonProperty("salt") byte[] salt,
+            @JsonProperty("email") String email,
+            @JsonProperty("phoneNumber") String phoneNumber,
+            @JsonProperty("role") UserRole role) {
         this.userId = UUID.randomUUID().toString();
         this.firstName = firstName;
         this.lastName = lastName;
@@ -36,67 +45,107 @@ public class User {
         this.createdAt = LocalDate.now();
         this.role = role;
         this.status = Status.Active;
-    }
-
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public void setPasswordHash(String passwordString) {
-        this.passwordHash = passwordString;
-    }
-
-    public void setFailedAttempts(int failedAttempts) {
-        this.failedAttempts = failedAttempts;
-    }
-
-    public void setLockUntil(LocalDate lockUntil) {
-        this.lockUntil = lockUntil;
-    }
-
-    public void setRole(UserRole role) {
-        this.role = role;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    public void setCreatedAt(LocalDate createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+        this.salt = salt;
     }
 
     public String getPasswordHash() {
         return passwordHash;
     }
 
+    public void setPasswordHash(String passwordString) {
+        this.passwordHash = passwordString;
+    }
+
     public String getUserId() {
         return userId;
     }
 
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
     public String getUsername() {
         return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public int getFailedAttempts() {
+        return failedAttempts;
+    }
+
+    public void setFailedAttempts(int failedAttempts) {
+        this.failedAttempts = failedAttempts;
+    }
+
+    public LocalDate getLockUntil() {
+        return lockUntil;
+    }
+
+    public void setLockUntil(LocalDate lockUntil) {
+        this.lockUntil = lockUntil;
+    }
+
+    public LocalDate getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDate createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public byte[] getSalt() {
+        return salt;
     }
 
     public String toJson() {
