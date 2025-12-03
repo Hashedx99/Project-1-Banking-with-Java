@@ -38,4 +38,12 @@ public class Session {
         this.status = SessionStatus.Active;
         this.role = user.getRole();
     }
+
+    public void terminateSession() {
+        this.status = SessionStatus.Terminated;
+    }
+
+    public boolean isNotTerminated() {
+        return this.status != SessionStatus.Terminated;
+    }
 }

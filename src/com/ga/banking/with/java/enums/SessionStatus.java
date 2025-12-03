@@ -4,5 +4,6 @@ public enum SessionStatus {
     Unauthenticated,
     Active,
     Idle,
-    Expired
+    Expired,
+    Terminated
 }

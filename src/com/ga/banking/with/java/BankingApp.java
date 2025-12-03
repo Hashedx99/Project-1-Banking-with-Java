@@ -11,11 +11,13 @@ public class BankingApp {
 
     public static void main(String[] args) {
 
-
         CommonUtil.printSeparatorLine();
         System.out.println(" ".repeat(36) + "Welcome to Shadow Moses Bank" + " ".repeat(36));
         CommonUtil.printSeparatorLine();
         session.initializeSession(auth.authenticate());
+        while (session.isNotTerminated()) {
+
+        }
 
     }
 
