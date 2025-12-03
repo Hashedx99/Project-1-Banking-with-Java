@@ -1,7 +1,5 @@
 package com.ga.banking.with.java.entities;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ga.banking.with.java.enums.Status;
 import com.ga.banking.with.java.enums.UserRole;
 
@@ -139,6 +137,10 @@ public class User {
 
     public String getSalt() {
         return salt;
+    }
+
+    public void setSalt(String salt) {
+        this.salt = salt;
     }
 
     public String toString() {

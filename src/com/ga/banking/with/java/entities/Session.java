@@ -2,6 +2,9 @@ package com.ga.banking.with.java.entities;
 
 import com.ga.banking.with.java.enums.SessionStatus;
 import com.ga.banking.with.java.enums.UserRole;
+import com.ga.banking.with.java.features.Auth;
+
+import java.util.Scanner;
 
 public class Session {
     private User user;
@@ -45,5 +48,21 @@ public class Session {
 
     public boolean isNotTerminated() {
         return this.status != SessionStatus.Terminated;
+    }
+
+    public void getUserMenu(Auth auth) {
+        Scanner input = new Scanner(System.in);
+        if (this.isAuthenticated() && this.user.getRole() == UserRole.Banker) {
+            System.out.println("Banker Menu:");
+            System.out.println("Choose an option:");
+            System.out.println("1. Create Customer Account");
+
+            switch (input.nextLine()) {
+                case "1" -> {
+                    auth.createCustomerAccount();
+                }
+                default -> System.out.println("Invalid option. Please try again.");
+            }
+        }
     }
 }

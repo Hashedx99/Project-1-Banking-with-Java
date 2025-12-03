@@ -2,7 +2,6 @@ package com.ga.banking.with.java;
 
 import com.ga.banking.with.java.features.Auth;
 import com.ga.banking.with.java.entities.Session;
-import com.ga.banking.with.java.enums.UserRole;
 import com.ga.banking.with.java.helpers.CommonUtil;
 
 public class BankingApp {
@@ -17,9 +16,7 @@ public class BankingApp {
         CommonUtil.printSeparatorLine();
         session.initializeSession(auth.authenticate());
         while (session.isNotTerminated()) {
-            if (session.isAuthenticated() && session.getUser().getRole() == UserRole.Banker) {
-
-            }
+            session.getUserMenu(auth);
         }
 
     }

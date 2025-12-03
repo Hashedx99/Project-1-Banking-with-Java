@@ -1,5 +1,6 @@
 package com.ga.banking.with.java.helpers;
 
+import com.ga.banking.with.java.entities.Customer;
 import com.ga.banking.with.java.entities.User;
 import com.ga.banking.with.java.interfaces.FileHandler;
 import tools.jackson.databind.ObjectMapper;
@@ -10,12 +11,12 @@ import java.nio.file.Paths;
 
 import static com.ga.banking.with.java.helpers.CommonUtil.createDirectoriesAndWriteFile;
 
-public class CustomerFileHandler  implements FileHandler {
+public class CustomerFileHandler implements FileHandler {
 
     @Override
     public User readFromFile(File file) {
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(file, User.class);
+        return mapper.readValue(file, Customer.class);
     }
 
     @Override

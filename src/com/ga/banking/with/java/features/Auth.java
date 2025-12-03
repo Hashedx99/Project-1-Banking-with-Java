@@ -3,6 +3,7 @@ package com.ga.banking.with.java.features;
 import com.ga.banking.with.java.entities.Banker;
 import com.ga.banking.with.java.entities.Customer;
 import com.ga.banking.with.java.entities.User;
+import com.ga.banking.with.java.enums.Status;
 import com.ga.banking.with.java.enums.UserRole;
 import com.ga.banking.with.java.helpers.BankerFileHandler;
 import com.ga.banking.with.java.helpers.CommonUtil;
@@ -14,64 +15,20 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Scanner;
+import java.security.SecureRandom;
+import java.util.*;
+
+import static com.ga.banking.with.java.helpers.PasswordHasher.generateSalt;
+import static com.ga.banking.with.java.helpers.PasswordHasher.getPasswordHash;
 
 public class Auth {
     private static final BankerFileHandler bankerFileHandler = new BankerFileHandler();
     private static final CustomerFileHandler customerFileHandler = new CustomerFileHandler();
-
-    public User authenticate() {
-        Path dataPath = Paths.get("Data");
-        Path bankersPath = dataPath.resolve("Bankers");
-        Path customersPath = dataPath.resolve("Customers");
-
-        boolean noBankersYet = !Files.exists(dataPath) && !Files.exists(bankersPath);
-        boolean bankersPathExistsButNoBankersYet = Files.exists(dataPath) && Files.exists(bankersPath) &&
-                (bankersPath.toFile().listFiles() == null || Objects.requireNonNull(bankersPath.toFile().listFiles()).length == 0);
-        boolean shouldPromptForBankerCreation = noBankersYet || bankersPathExistsButNoBankersYet;
-        if (shouldPromptForBankerCreation) {
-            return acquireFirstEverSession();
-        } else {
-            Scanner input = new Scanner(System.in);
-            System.out.println("Please log in to continue.");
-            CommonUtil.printSeparatorLine();
-            System.out.println("Enter your username: ");
-            String username = input.nextLine();
-            CommonUtil.printSeparatorLine();
-            System.out.println("Enter your password: ");
-            String password = input.nextLine();
-            CommonUtil.printSeparatorLine();
-            User user = login(customersPath, bankersPath, username, password);
-            if (user == null) {
-                System.out.println("Invalid username or password.");
-                return null;
-            }
-
-            switch (user.getStatus()) {
-                case Active -> {
-                    System.out.println("Login successful! Welcome, " + user.getFirstName() + " " +
-                            user.getLastName() + " (" + user.getRole() + ")");
-                    return user;
-                }
-                case Inactive -> System.out.println("Your account is inactive. Please contact support.");
-                case Disabled -> System.out.println("Your account is disabled. Please contact support.");
-                case Locked ->
-                        System.out.println("Your account is locked due to multiple failed login attempts. Please try " +
-                                "again later or contact support.");
-                default -> System.out.println("Your account status is unknown. Please contact support.");
-            }
-
-            return null;
-        }
-
-    }
+    private static final Scanner input = new Scanner(System.in);
+    private static final SecureRandom secureRandom = new SecureRandom();
 
     private static Banker acquireFirstEverSession() {
-        String salt = PasswordHasher.generateSalt();
-        Scanner input = new Scanner(System.in);
+        String salt = generateSalt();
         System.out.println("No bankers found in the system. Please create the first banker account.");
         CommonUtil.printSeparatorLine();
         System.out.println("Please enter your First Name: ");
@@ -154,5 +111,95 @@ public class Auth {
         }
 
         return fileList;
+    }
+
+    public User authenticate() {
+        Path dataPath = Paths.get("Data");
+        Path bankersPath = dataPath.resolve("Bankers");
+        Path customersPath = dataPath.resolve("Customers");
+
+        boolean noBankersYet = !Files.exists(dataPath) && !Files.exists(bankersPath);
+        boolean bankersPathExistsButNoBankersYet = Files.exists(dataPath) && Files.exists(bankersPath) &&
+                (bankersPath.toFile().listFiles() == null || Objects.requireNonNull(bankersPath.toFile().listFiles()).length == 0);
+        boolean shouldPromptForBankerCreation = noBankersYet || bankersPathExistsButNoBankersYet;
+        if (shouldPromptForBankerCreation) {
+            return acquireFirstEverSession();
+        } else {
+            System.out.println("Please log in to continue.");
+            CommonUtil.printSeparatorLine();
+            System.out.println("Enter your username: ");
+            String username = input.nextLine();
+            CommonUtil.printSeparatorLine();
+            System.out.println("Enter your password: ");
+            String password = input.nextLine();
+            CommonUtil.printSeparatorLine();
+            User user = login(customersPath, bankersPath, username, password);
+            if (user == null) {
+                System.out.println("Invalid username or password.");
+                return null;
+            }
+
+            switch (user.getStatus()) {
+                case FirstLogin -> {
+                    System.out.println("This is your first login. Please change your password.");
+                    System.out.println("Enter your new password: ");
+                    String newPassword = input.nextLine();
+                    String newSalt = generateSalt();
+                    user.setPasswordHash(getPasswordHash(newPassword, newSalt));
+                    user.setSalt(newSalt);
+                    user.setStatus(Status.Active);
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    customerFileHandler.writeToFile(user.getUsername(), user.getUserId(),
+                            objectMapper.writeValueAsString(user));
+                    System.out.println("Password changed successfully. You can now log in with your new password.");
+                    return null;
+                }
+                case Active -> {
+                    System.out.println("Login successful! Welcome, " + user.getFirstName() + " " +
+                            user.getLastName() + " (" + user.getRole() + ")");
+                    return user;
+                }
+                case Inactive -> System.out.println("Your account is inactive. Please contact support.");
+                case Disabled -> System.out.println("Your account is disabled. Please contact support.");
+                case Locked ->
+                        System.out.println("Your account is locked due to multiple failed login attempts. Please try " +
+                                "again later or contact support.");
+                default -> System.out.println("Your account status is unknown. Please contact support.");
+            }
+
+            return null;
+        }
+
+    }
+
+    public Customer createCustomerAccount() {
+        String salt = generateSalt();
+        CommonUtil.printSeparatorLine();
+        System.out.println("Customer First Name: ");
+        String firstName = input.nextLine();
+        CommonUtil.printSeparatorLine();
+        System.out.println("Customer Last Name: ");
+        String lastName = input.nextLine();
+        CommonUtil.printSeparatorLine();
+        System.out.println("Customer username: ");
+        String username = input.nextLine();
+        CommonUtil.printSeparatorLine();
+        System.out.println("Customer email: ");
+        String email = input.nextLine();
+        CommonUtil.printSeparatorLine();
+        System.out.println("Customer phone number: ");
+        String phoneNumber = input.nextLine();
+        byte[] randomPass = new byte[8];
+        secureRandom.nextBytes(randomPass);
+        String password = Base64.getEncoder().encodeToString(randomPass);
+        Customer customer = new Customer(firstName, lastName, username, getPasswordHash(password, salt), salt, email,
+                phoneNumber);
+        customer.setStatus(Status.FirstLogin);
+        ObjectMapper objectMapper = new ObjectMapper();
+        customerFileHandler.writeToFile(customer.getUsername(), customer.getUserId(),
+                objectMapper.writeValueAsString(customer));
+        System.out.println("Customer account created successfully for " + customer.getFirstName() + " " + customer.getLastName() + "!");
+        System.out.println("Provide the following temporary password to the customer for their first login: " + password);
+        return customer;
     }
 }
