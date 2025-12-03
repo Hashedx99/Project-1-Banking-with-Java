@@ -44,11 +44,7 @@ public class Auth {
             System.out.println("Enter your password: ");
             String password = input.nextLine();
             CommonUtil.printSeparatorLine();
-            Banker banker = (Banker) noCustomersOnlyBankersProcedure(customersPath, bankersPath, username, password);
-            if (banker != null) {
-                return banker;
-            }
-            User user = normalLoginProcedure(customersPath, bankersPath, username, password);
+            User user = login(customersPath, bankersPath, username, password);
             if (user == null) {
                 System.out.println("Invalid username or password.");
                 return null;
@@ -103,25 +99,11 @@ public class Auth {
         return banker;
     }
 
-    private static User noCustomersOnlyBankersProcedure(Path customersPath, Path bankersPath, String username,
-                                                        String password) {
-        File[] customerFiles = (Files.exists(customersPath) && Files.isDirectory(customersPath))
-                ? customersPath.toFile().listFiles()
-                : null;
-        boolean customersPathMissingOrEmpty = customerFiles == null || customerFiles.length == 0;
-        if (customersPathMissingOrEmpty) {
-            List<File> fileList = validatePathAndFiles(bankersPath, username, UserRole.Banker);
-            return fileList.stream().filter(file -> {
-                        Banker tmpBanker = (Banker) bankerFileHandler.readFromFile(file);
-                        return PasswordHasher.validatePassword(password, tmpBanker.getSalt(),
-                                tmpBanker.getPasswordHash());
-                    }).findFirst().map(bankerFileHandler::readFromFile)
-                    .orElseThrow(() -> new RuntimeException("Invalid username or password."));
+    private static User login(Path customersPath, Path bankersPath, String username, String password) {
+        User user = bankerFlowOnlyIfNoCustomers(customersPath, bankersPath, username, password);
+        if (user != null) {
+            return user;
         }
-        return null;
-    }
-
-    private static User normalLoginProcedure(Path customersPath, Path bankersPath, String username, String password) {
         List<File> customerFileList = validatePathAndFiles(customersPath, username, UserRole.Customer);
         Customer customer =
                 (Customer) customerFileList.stream().filter(file -> {
@@ -140,6 +122,24 @@ public class Auth {
                         }).findFirst().map(bankerFileHandler::readFromFile)
                         .orElse(null);
         return customer != null ? customer : banker;
+    }
+
+    private static User bankerFlowOnlyIfNoCustomers(Path customersPath, Path bankersPath, String username,
+                                                    String password) {
+        File[] customerFiles = (Files.exists(customersPath) && Files.isDirectory(customersPath))
+                ? customersPath.toFile().listFiles()
+                : null;
+        boolean customersPathMissingOrEmpty = customerFiles == null || customerFiles.length == 0;
+        if (customersPathMissingOrEmpty) {
+            List<File> fileList = validatePathAndFiles(bankersPath, username, UserRole.Banker);
+            return fileList.stream().filter(file -> {
+                        Banker tmpBanker = (Banker) bankerFileHandler.readFromFile(file);
+                        return PasswordHasher.validatePassword(password, tmpBanker.getSalt(),
+                                tmpBanker.getPasswordHash());
+                    }).findFirst().map(bankerFileHandler::readFromFile)
+                    .orElseThrow(() -> new RuntimeException("Invalid username or password."));
+        }
+        return null;
     }
 
     private static List<File> validatePathAndFiles(Path path, String username, UserRole role) {
