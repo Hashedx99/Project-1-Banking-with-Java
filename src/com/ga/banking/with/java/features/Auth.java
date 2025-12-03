@@ -94,7 +94,7 @@ public class Auth {
                         return PasswordHasher.validatePassword(password, tmpBanker.getSalt(),
                                 tmpBanker.getPasswordHash());
                     }).findFirst().map(bankerFileHandler::readFromFile)
-                    .orElseThrow(() -> new RuntimeException("Invalid username or password."));
+                    .orElse(null);
         }
         return null;
     }
@@ -114,63 +114,63 @@ public class Auth {
     }
 
     public User authenticate() {
-        Path dataPath = Paths.get("Data");
-        Path bankersPath = dataPath.resolve("Bankers");
-        Path customersPath = dataPath.resolve("Customers");
+        while (true) {
+            Path dataPath = Paths.get("Data");
+            Path bankersPath = dataPath.resolve("Bankers");
+            Path customersPath = dataPath.resolve("Customers");
 
-        boolean noBankersYet = !Files.exists(dataPath) && !Files.exists(bankersPath);
-        boolean bankersPathExistsButNoBankersYet = Files.exists(dataPath) && Files.exists(bankersPath) &&
-                (bankersPath.toFile().listFiles() == null || Objects.requireNonNull(bankersPath.toFile().listFiles()).length == 0);
-        boolean shouldPromptForBankerCreation = noBankersYet || bankersPathExistsButNoBankersYet;
-        if (shouldPromptForBankerCreation) {
-            return acquireFirstEverSession();
-        } else {
-            System.out.println("Please log in to continue.");
-            CommonUtil.printSeparatorLine();
-            System.out.println("Enter your username: ");
-            String username = input.nextLine();
-            CommonUtil.printSeparatorLine();
-            System.out.println("Enter your password: ");
-            String password = input.nextLine();
-            CommonUtil.printSeparatorLine();
-            User user = login(customersPath, bankersPath, username, password);
-            if (user == null) {
-                System.out.println("Invalid username or password.");
-                return null;
-            }
-
-            switch (user.getStatus()) {
-                case FirstLogin -> {
-                    System.out.println("This is your first login. Please change your password.");
-                    System.out.println("Enter your new password: ");
-                    String newPassword = input.nextLine();
-                    String newSalt = generateSalt();
-                    user.setPasswordHash(getPasswordHash(newPassword, newSalt));
-                    user.setSalt(newSalt);
-                    user.setStatus(Status.Active);
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    customerFileHandler.writeToFile(user.getUsername(), user.getUserId(),
-                            objectMapper.writeValueAsString(user));
-                    System.out.println("Password changed successfully. You can now log in with your new password.");
-                    return null;
+            boolean noBankersYet = !Files.exists(dataPath) && !Files.exists(bankersPath);
+            boolean bankersPathExistsButNoBankersYet = Files.exists(dataPath) && Files.exists(bankersPath) &&
+                    (bankersPath.toFile().listFiles() == null || Objects.requireNonNull(bankersPath.toFile().listFiles()).length == 0);
+            boolean shouldPromptForBankerCreation = noBankersYet || bankersPathExistsButNoBankersYet;
+            if (shouldPromptForBankerCreation) {
+                return acquireFirstEverSession();
+            } else {
+                System.out.println("Please log in to continue.");
+                CommonUtil.printSeparatorLine();
+                System.out.println("Enter your username: ");
+                String username = input.nextLine();
+                CommonUtil.printSeparatorLine();
+                System.out.println("Enter your password: ");
+                String password = input.nextLine();
+                CommonUtil.printSeparatorLine();
+                User user = login(customersPath, bankersPath, username, password);
+                if (user == null) {
+                    System.out.println("Invalid username or password.");
+                    continue;
                 }
-                case Active -> {
-                    System.out.println("Login successful! Welcome, " + user.getFirstName() + " " +
-                            user.getLastName() + " (" + user.getRole() + ")");
-                    return user;
-                }
-                case Inactive -> System.out.println("Your account is inactive. Please contact support.");
-                case Disabled -> System.out.println("Your account is disabled. Please contact support.");
-                case Locked ->
-                        System.out.println("Your account is locked due to multiple failed login attempts. Please try " +
-                                "again later or contact support.");
-                default -> System.out.println("Your account status is unknown. Please contact support.");
-            }
 
-            return null;
+                switch (Objects.requireNonNull(user).getStatus()) {
+                    case FirstLogin -> {
+                        System.out.println("This is your first login. Please change your password.");
+                        System.out.println("Enter your new password: ");
+                        String newPassword = input.nextLine();
+                        String newSalt = generateSalt();
+                        user.setPasswordHash(getPasswordHash(newPassword, newSalt));
+                        user.setSalt(newSalt);
+                        user.setStatus(Status.Active);
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        customerFileHandler.writeToFile(user.getUsername(), user.getUserId(),
+                                objectMapper.writeValueAsString(user));
+                        System.out.println("Password changed successfully. You can now log in with your new password.");
+                    }
+                    case Active -> {
+                        System.out.println("Login successful! Welcome, " + user.getFirstName() + " " +
+                                user.getLastName() + " (" + user.getRole() + ")");
+                        return user;
+                    }
+                    case Inactive -> System.out.println("Your account is inactive. Please contact support.");
+                    case Disabled -> System.out.println("Your account is disabled. Please contact support.");
+                    case Locked ->
+                            System.out.println("Your account is locked due to multiple failed login attempts. Please " +
+                                    "try " +
+                                    "again later or contact support.");
+                    default -> System.out.println("Your account status is unknown. Please contact support.");
+                }
+            }
         }
-
     }
+
 
     public Customer createCustomerAccount() {
         String salt = generateSalt();

@@ -56,10 +56,14 @@ public class Session {
             System.out.println("Banker Menu:");
             System.out.println("Choose an option:");
             System.out.println("1. Create Customer Account");
-
+            System.out.println("Q. Quit");
             switch (input.nextLine()) {
                 case "1" -> {
                     auth.createCustomerAccount();
+                }
+                case "Q", "q" -> {
+                    System.out.println("Exiting Banker Menu.");
+                    this.terminateSession();
                 }
                 default -> System.out.println("Invalid option. Please try again.");
             }
