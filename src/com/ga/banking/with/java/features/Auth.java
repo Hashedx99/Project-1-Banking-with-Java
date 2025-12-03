@@ -1,4 +1,4 @@
-package com.ga.banking.with.java.Features;
+package com.ga.banking.with.java.features;
 
 import com.ga.banking.with.java.entities.Banker;
 import com.ga.banking.with.java.entities.Customer;
