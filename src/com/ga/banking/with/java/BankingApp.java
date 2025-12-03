@@ -1,9 +1,13 @@
 package com.ga.banking.with.java;
 
 import com.ga.banking.with.java.entities.Banker;
+import com.ga.banking.with.java.entities.Customer;
 import com.ga.banking.with.java.entities.Session;
+import com.ga.banking.with.java.entities.User;
+import com.ga.banking.with.java.enums.UserRole;
 import com.ga.banking.with.java.helpers.BankerFileHandler;
 import com.ga.banking.with.java.helpers.CommonUtil;
+import com.ga.banking.with.java.helpers.CustomerFileHandler;
 import com.ga.banking.with.java.helpers.PasswordHasher;
 import tools.jackson.databind.ObjectMapper;
 
@@ -19,9 +23,11 @@ import java.util.stream.Stream;
 
 public class BankingApp {
     private static final BankerFileHandler bankerFileHandler = new BankerFileHandler();
+    private static final CustomerFileHandler customerFileHandler = new CustomerFileHandler();
+
+    private static Session session = new Session();
 
     public static void main(String[] args) {
-        Session session = new Session();
         Path dataPath = Paths.get("Data");
         Path bankersPath = dataPath.resolve("Bankers");
         Path customersPath = dataPath.resolve("Customers");
@@ -40,11 +46,6 @@ public class BankingApp {
             session.initializeSession(acquireFirstEverSession());
         } else {
             Scanner input = new Scanner(System.in);
-
-            File[] customerFiles = (Files.exists(customersPath) && Files.isDirectory(customersPath))
-                    ? customersPath.toFile().listFiles()
-                    : null;
-            boolean customersPathMissingOrEmpty = customerFiles == null || customerFiles.length == 0;
             System.out.println("Please log in to continue.");
             CommonUtil.printSeparatorLine();
             System.out.println("Enter your username: ");
@@ -53,50 +54,26 @@ public class BankingApp {
             System.out.println("Enter your password: ");
             String password = input.nextLine();
             CommonUtil.printSeparatorLine();
-            if (customersPathMissingOrEmpty) {
-                if (bankersPath.toFile().listFiles() == null) {
-                    throw new RuntimeException("Banker files are missing.");
-                }
-                List<File> fileList =
-                        Arrays.stream(Objects.requireNonNull(bankersPath.toFile().listFiles(file -> file.getName().split(
-                                "-")[1].equals(username)))).toList();
-                if (fileList.size() > 1) {
-                    throw new RuntimeException("Banker files are duplicated.");
-                }
-                Banker banker =
-                        (Banker) fileList.stream().filter(file -> {
-                            Banker tmpBanker = (Banker) bankerFileHandler.readFromFile(file);
-                            return PasswordHasher.validatePassword(password, tmpBanker.getSalt(),
-                                    tmpBanker.getPasswordHash());
-                        }).findFirst().map(bankerFileHandler::readFromFile)
-                                .orElseThrow(() -> new RuntimeException("Invalid username or password."));
-                session.initializeSession(banker);
-
+            noCustomersOnlyBankersProcedure(customersPath, bankersPath, username, password);
+            if (session.isNotAuthenticated()) {
+                normalLoginProcedure(customersPath, bankersPath, username, password);
             }
-
-            if (customersPath.toFile().listFiles() == null) {
-                throw new RuntimeException("Customer files are missing.");
+            if (session.isAuthenticated()) {
+                User loggedInUser = session.getUser();
+                System.out.println("Login successful! Welcome, " + loggedInUser.getFirstName() + " " +
+                        loggedInUser.getLastName() + " (" + loggedInUser.getRole() + ")");
             }
-            Stream<File> fileStream =
-                    Arrays.stream(Objects.requireNonNull(customersPath.toFile().listFiles(file -> file.getName().split(
-                            "-")[1].equals(username))));
-            if (fileStream.count() > 1) {
-                throw new RuntimeException("Customer files are duplicated.");
+            else if (session.isNotAuthenticated()) {
+                throw new RuntimeException("Flows exhausted. Unable to authenticate user.");
             }
 
 
         }
-
-
-//        System.out.println(banker.getPasswordHash());
-//        System.out.println("Enter password to validate: ");
-//        String enteredPassword = input.nextLine();
-//        System.out.println(PasswordHasher.validatePassword(enteredPassword, salt, banker.getPasswordHash()) ?
-//                "Password is valid!" : "Invalid Password!");
     }
 
+
     private static Banker acquireFirstEverSession() {
-        byte[] salt = PasswordHasher.generateSalt();
+        String salt = PasswordHasher.generateSalt();
         Scanner input = new Scanner(System.in);
         System.out.println("No bankers found in the system. Please create the first banker account.");
         CommonUtil.printSeparatorLine();
@@ -117,13 +94,70 @@ public class BankingApp {
         CommonUtil.printSeparatorLine();
         System.out.println("Please enter your phone number: ");
         String phoneNumber = input.nextLine();
-        Banker banker = new Banker(firstName, lastName, username, PasswordHasher.getPasswordHash(password, salt),
-                salt,
-                email, phoneNumber);
+        Banker banker = new Banker(firstName, lastName, username, password, salt, email, phoneNumber);
         ObjectMapper objectMapper = new ObjectMapper();
         bankerFileHandler.writeToFile(banker.getUsername(), banker.getUserId(),
                 objectMapper.writeValueAsString(banker));
         System.out.println("Banker account created successfully! You are now logged in as " + banker.getFirstName() + " " + banker.getLastName());
         return banker;
     }
+
+    private static void noCustomersOnlyBankersProcedure(Path customersPath, Path bankersPath, String username,
+                                                        String password) {
+        File[] customerFiles = (Files.exists(customersPath) && Files.isDirectory(customersPath))
+                ? customersPath.toFile().listFiles()
+                : null;
+        boolean customersPathMissingOrEmpty = customerFiles == null || customerFiles.length == 0;
+        if (customersPathMissingOrEmpty) {
+            List<File> fileList = validatePathAndFiles(bankersPath, username, UserRole.Banker);
+            Banker banker =
+                    (Banker) fileList.stream().filter(file -> {
+                                Banker tmpBanker = (Banker) bankerFileHandler.readFromFile(file);
+                                return PasswordHasher.validatePassword(password, tmpBanker.getSalt(),
+                                        tmpBanker.getPasswordHash());
+                            }).findFirst().map(bankerFileHandler::readFromFile)
+                            .orElseThrow(() -> new RuntimeException("Invalid username or password."));
+            session.initializeSession(banker);
+        }
+    }
+
+    private static void normalLoginProcedure(Path customersPath, Path bankersPath, String username, String password) {
+        List<File> customerFileList = validatePathAndFiles(customersPath, username, UserRole.Customer);
+        Customer customer =
+                (Customer) customerFileList.stream().filter(file -> {
+                            Customer tmpCustomer = (Customer) customerFileHandler.readFromFile(file);
+                            return PasswordHasher.validatePassword(password, tmpCustomer.getSalt(),
+                                    tmpCustomer.getPasswordHash());
+                        }).findFirst().map(customerFileHandler::readFromFile)
+                        .orElse(null);
+
+        List<File> fileList = validatePathAndFiles(bankersPath, username, UserRole.Banker);
+        Banker banker =
+                (Banker) fileList.stream().filter(file -> {
+                            Banker tmpBanker = (Banker) bankerFileHandler.readFromFile(file);
+                            return PasswordHasher.validatePassword(password, tmpBanker.getSalt(),
+                                    tmpBanker.getPasswordHash());
+                        }).findFirst().map(bankerFileHandler::readFromFile)
+                        .orElse(null);
+        User user = customer != null ? customer : banker;
+        if (user == null) {
+            throw new RuntimeException("Invalid username or password.");
+        }
+        session.initializeSession(user);
+    }
+
+    private static List<File> validatePathAndFiles(Path path, String username, UserRole role) {
+        if (path.toFile().listFiles() == null) {
+            throw new RuntimeException(role == UserRole.Banker ? "Banker" : "Customer" + " files are missing.");
+        }
+        List<File> fileList =
+                Arrays.stream(Objects.requireNonNull(path.toFile().listFiles(file -> file.getName().split(
+                        "-")[1].equals(username)))).toList();
+        if (fileList.size() > 1) {
+            throw new RuntimeException(role == UserRole.Banker ? "Banker" : "Customer" + " files are duplicated.");
+        }
+
+        return fileList;
+    }
+
 }

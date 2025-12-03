@@ -21,18 +21,11 @@ public class User {
     private LocalDate createdAt;
     private UserRole role;
     private Status status;
-    private byte[] salt;
+    private String salt;
 
-    @JsonCreator
-    public User(
-            @JsonProperty("firstName") String firstName,
-            @JsonProperty("lastName") String lastName,
-            @JsonProperty("username") String userName,
-            @JsonProperty("passwordHash") String passwordHash,
-            @JsonProperty("salt") byte[] salt,
-            @JsonProperty("email") String email,
-            @JsonProperty("phoneNumber") String phoneNumber,
-            @JsonProperty("role") UserRole role) {
+
+    public User(String firstName, String lastName, String userName, String passwordHash, String salt, String email,
+                String phoneNumber, UserRole role) {
         this.userId = UUID.randomUUID().toString();
         this.firstName = firstName;
         this.lastName = lastName;
@@ -144,11 +137,11 @@ public class User {
         this.status = status;
     }
 
-    public byte[] getSalt() {
+    public String getSalt() {
         return salt;
     }
 
-    public String toJson() {
+    public String toString() {
         return "{" +
                 "\"userId\": \"" + userId + "\"," +
                 "\"firstName\": \"" + firstName + "\"," +
