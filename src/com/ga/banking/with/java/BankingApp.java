@@ -1,5 +1,6 @@
 package com.ga.banking.with.java;
 
+import com.ga.banking.with.java.entities.User;
 import com.ga.banking.with.java.features.Auth;
 import com.ga.banking.with.java.entities.Session;
 import com.ga.banking.with.java.helpers.CommonUtil;
@@ -14,7 +15,8 @@ public class BankingApp {
         CommonUtil.printSeparatorLine();
         System.out.println(" ".repeat(36) + "Welcome to Shadow Moses Bank" + " ".repeat(36));
         CommonUtil.printSeparatorLine();
-        session.initializeSession(auth.authenticate());
+        User user =  auth.authenticate();
+        session.initializeSession(user, auth.loadUserAccounts(user));
         while (session.isNotTerminated()) {
             session.getUserMenu(auth);
         }

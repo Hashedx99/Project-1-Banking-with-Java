@@ -3,13 +3,18 @@ package com.ga.banking.with.java.entities;
 import com.ga.banking.with.java.enums.SessionStatus;
 import com.ga.banking.with.java.enums.UserRole;
 import com.ga.banking.with.java.features.Auth;
+import com.ga.banking.with.java.helpers.AccountFileHandler;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Session {
     private User user;
     private SessionStatus status;
     private UserRole role;
+    private List<Account> accounts;
+    private AccountFileHandler accountFileHandler;
 
     public Session() {
         this.status = SessionStatus.Unauthenticated;
@@ -36,10 +41,11 @@ public class Session {
         return this.status == SessionStatus.Unauthenticated;
     }
 
-    public void initializeSession(User user) {
+    public void initializeSession(User user, List<Account> accounts) {
         this.user = user;
         this.status = SessionStatus.Active;
         this.role = user.getRole();
+        this.accounts = accounts;
     }
 
     public void terminateSession() {
@@ -53,20 +59,70 @@ public class Session {
     public void getUserMenu(Auth auth) {
         Scanner input = new Scanner(System.in);
         if (this.isAuthenticated() && this.user.getRole() == UserRole.Banker) {
-            System.out.println("Banker Menu:");
-            System.out.println("Choose an option:");
-            System.out.println("1. Create Customer Account");
-            System.out.println("Q. Quit");
-            switch (input.nextLine()) {
-                case "1" -> {
-                    auth.createCustomerAccount();
-                }
-                case "Q", "q" -> {
-                    System.out.println("Exiting Banker Menu.");
-                    this.terminateSession();
-                }
-                default -> System.out.println("Invalid option. Please try again.");
+            bankerMenu(auth, input);
+        } else if (this.isAuthenticated() && this.user.getRole() == UserRole.Customer) {
+            customerMenu(auth, input);
+        } else {
+            System.out.println("User is not authenticated.");
+        }
+    }
+
+    private void bankerMenu(Auth auth, Scanner input) {
+        System.out.println("Banker Menu:");
+        System.out.println("Choose an option:");
+        System.out.println("1. Create Customer Account");
+        System.out.println("2. View Customer Accounts");
+        System.out.println("3. Deactivate Customer Account");
+        System.out.println("4. Activate Customer Account");
+        System.out.println("C. Create Banker Account");
+        System.out.println("Q. Quit");
+        switch (input.nextLine()) {
+            case "1" -> {
+                auth.createUserForCustomer();
             }
+            case "2" -> {
+                System.out.println("Enter Customer ID to view accounts:");
+                String customerId = input.nextLine();
+                List<Account> customerAccounts = auth.getUserAccounts(customerId);
+                if (customerAccounts == null || customerAccounts.isEmpty()) {
+                    System.out.println("No accounts found for Customer ID: " + customerId);
+                } else {
+                    System.out.println("Accounts for Customer ID: " + customerId);
+                    for (Account account : customerAccounts) {
+                        System.out.println(account.toString());
+                    }
+                }
+            }
+            case "Q", "q" -> {
+                System.out.println("Exiting Banker Menu.");
+                this.terminateSession();
+            }
+            default -> System.out.println("Invalid option. Please try again.");
+        }
+    }
+
+
+    private void customerMenu(Auth auth, Scanner input) {
+        System.out.println("Customer Menu:");
+        System.out.println("Choose an option:");
+        System.out.println("1. View My Accounts");
+        System.out.println("Q. Quit");
+        switch (input.nextLine()) {
+            case "1" -> {
+                if (accounts == null || accounts.isEmpty()) {
+                    System.out.println("You have no accounts.");
+                } else {
+                    System.out.println("Your Accounts:");
+                    for (Account account : accounts) {
+                        System.out.println(account.toString());
+                    }
+                }
+            }
+            case "Q", "q" -> {
+                System.out.println("Exiting Customer Menu.");
+                this.terminateSession();
+            }
+            default -> System.out.println("Invalid option. Please try again.");
         }
     }
 }

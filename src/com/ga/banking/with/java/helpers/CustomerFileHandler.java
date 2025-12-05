@@ -14,19 +14,27 @@ import static com.ga.banking.with.java.helpers.CommonUtil.createDirectoriesAndWr
 public class CustomerFileHandler implements FileHandler {
 
     @Override
-    public User readFromFile(File file) {
+    public User readFromFile(Object file) {
+        if (!(file instanceof File)) {
+            System.out.println("Invalid file content for customer. Expected a File.");
+            return null;
+        }
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(file, Customer.class);
+        return mapper.readValue((File) file, Customer.class);
     }
 
     @Override
-    public boolean writeToFile(String customerName, String customerId, String fileContent) {
+    public boolean writeToFile(String customerName, String customerId, Object fileContent) {
+        if (!(fileContent instanceof String)) {
+            System.out.println("Invalid file content for customer. Expected a JSON string.");
+            return false;
+        }
         try {
             String fileName = "Customer-" + customerName + "-" + customerId + ".json";
             Path dataPath = Paths.get("Data");
             Path customersPath = dataPath.resolve("Customers");
 
-            createDirectoriesAndWriteFile(fileContent, fileName, dataPath, customersPath);
+            createDirectoriesAndWriteFile((String) fileContent, fileName, dataPath, customersPath);
         } catch (Exception e) {
             System.out.println("An error occurred while writing to the banker file.");
             System.out.println(e.getMessage());
