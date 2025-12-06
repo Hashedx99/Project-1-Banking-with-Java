@@ -3,11 +3,19 @@ package com.ga.banking.with.java.features;
 import com.ga.banking.with.java.entities.Account;
 import com.ga.banking.with.java.entities.Banker;
 import com.ga.banking.with.java.entities.Customer;
+import com.ga.banking.with.java.entities.DebitCard;
+import com.ga.banking.with.java.entities.MasterCard;
+import com.ga.banking.with.java.entities.MasterCardPlatinum;
+import com.ga.banking.with.java.entities.MasterCardTitanium;
 import com.ga.banking.with.java.entities.User;
 import com.ga.banking.with.java.enums.AccountType;
 import com.ga.banking.with.java.enums.Status;
 import com.ga.banking.with.java.enums.UserRole;
-import com.ga.banking.with.java.helpers.*;
+import com.ga.banking.with.java.helpers.AccountFileHandler;
+import com.ga.banking.with.java.helpers.BankerFileHandler;
+import com.ga.banking.with.java.helpers.CommonUtil;
+import com.ga.banking.with.java.helpers.CustomerFileHandler;
+import com.ga.banking.with.java.helpers.DebitCardFileHandler;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.File;
@@ -15,15 +23,23 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.List;
+import java.util.Objects;
+import java.util.Scanner;
 
 import static com.ga.banking.with.java.helpers.PasswordHasher.generateSalt;
 import static com.ga.banking.with.java.helpers.PasswordHasher.getPasswordHash;
+import static com.ga.banking.with.java.helpers.PasswordHasher.isPasswordStrong;
+import static com.ga.banking.with.java.helpers.PasswordHasher.validatePassword;
 
 public class Auth {
     private static final BankerFileHandler bankerFileHandler = new BankerFileHandler();
     private static final CustomerFileHandler customerFileHandler = new CustomerFileHandler();
     private static final AccountFileHandler accountFileHandler = new AccountFileHandler();
+    private static final DebitCardFileHandler debitCardFileHandler = new DebitCardFileHandler();
     private static final Scanner input = new Scanner(System.in);
     private static final SecureRandom secureRandom = new SecureRandom();
 
@@ -41,7 +57,10 @@ public class Auth {
         String username = input.nextLine();
         CommonUtil.printSeparatorLine();
         System.out.println("Please enter your password: ");
-        String password = PasswordHasher.getPasswordHash(input.nextLine(), salt);
+        String tempPass = input.nextLine();
+        String password;
+        tempPass = validatePasswordRequirements(tempPass);
+        password = getPasswordHash(tempPass, salt);
         CommonUtil.printSeparatorLine();
         System.out.println("Please enter your email: ");
         String email = input.nextLine();
@@ -65,7 +84,7 @@ public class Auth {
         Customer customer =
                 (Customer) customerFileList.stream().filter(file -> {
                             Customer tmpCustomer = (Customer) customerFileHandler.readFromFile(file);
-                            return PasswordHasher.validatePassword(password, tmpCustomer.getSalt(),
+                            return validatePassword(password, tmpCustomer.getSalt(),
                                     tmpCustomer.getPasswordHash());
                         }).findFirst().map(customerFileHandler::readFromFile)
                         .orElse(null);
@@ -74,7 +93,7 @@ public class Auth {
         Banker banker =
                 (Banker) fileList.stream().filter(file -> {
                             Banker tmpBanker = (Banker) bankerFileHandler.readFromFile(file);
-                            return PasswordHasher.validatePassword(password, tmpBanker.getSalt(),
+                            return validatePassword(password, tmpBanker.getSalt(),
                                     tmpBanker.getPasswordHash());
                         }).findFirst().map(bankerFileHandler::readFromFile)
                         .orElse(null);
@@ -93,7 +112,7 @@ public class Auth {
                 String finalPassword = password;
                 User user = fileList.stream().filter(file -> {
                             Banker tmpBanker = (Banker) bankerFileHandler.readFromFile(file);
-                            return PasswordHasher.validatePassword(finalPassword, tmpBanker.getSalt(),
+                            return validatePassword(finalPassword, tmpBanker.getSalt(),
                                     tmpBanker.getPasswordHash());
                         }).findFirst().map(bankerFileHandler::readFromFile)
                         .orElse(null);
@@ -129,41 +148,55 @@ public class Auth {
 
     private static List<Account> createBankingAccountsForCustomer(String accountTypeChoice, Customer customer) {
         List<Account> accounts = new ArrayList<>();
-        switch (accountTypeChoice) {
-            case "1" -> {
-                System.out.println("Enter initial deposit amount for Savings Account: ");
-                double initialDeposit = Double.parseDouble(input.nextLine().trim());
-                Account savingsAccount = new Account(customer.getUserId(), AccountType.Savings, initialDeposit);
-                accounts.add(savingsAccount);
-                System.out.println("Savings Account created for customer " + customer.getFirstName() + " " +
-                        customer.getLastName());
+        boolean validChoice = false;
+
+        while (!validChoice) {
+            switch (accountTypeChoice) {
+                case "1" -> {
+                    System.out.println("Enter initial deposit amount for Savings Account: ");
+                    double initialDeposit = Double.parseDouble(input.nextLine().trim());
+                    Account savingsAccount = new Account(customer.getUserId(), AccountType.Savings, initialDeposit);
+                    accounts.add(savingsAccount);
+                    System.out.println("Savings Account created for customer " + customer.getFirstName() + " " +
+                            customer.getLastName());
+                    validChoice = true;
+                }
+                case "2" -> {
+                    System.out.println("Enter initial deposit amount for Checking Account: ");
+                    double initialDeposit = Double.parseDouble(input.nextLine().trim());
+                    Account checkingAccount = new Account(customer.getUserId(), AccountType.Checking, initialDeposit);
+                    accounts.add(checkingAccount);
+                    System.out.println("Checking Account created for customer " + customer.getFirstName() + " " +
+                            customer.getLastName());
+                    validChoice = true;
+                }
+                case "3" -> {
+                    System.out.println("Enter initial deposit amount for Savings Account: ");
+                    double savingsInitialDeposit = Double.parseDouble(input.nextLine().trim());
+                    Account savingsAccount = new Account(customer.getUserId(), AccountType.Savings,
+                            savingsInitialDeposit);
+                    System.out.println("Enter initial deposit amount for Checking Account: ");
+                    double checkingInitialDeposit = Double.parseDouble(input.nextLine().trim());
+                    Account checkingAccount = new Account(customer.getUserId(), AccountType.Checking,
+                            checkingInitialDeposit);
+                    accounts.add(savingsAccount);
+                    accounts.add(checkingAccount);
+                    System.out.println("Both Savings and Checking Accounts created for customer " +
+                            customer.getFirstName() + " " + customer.getLastName());
+                    validChoice = true;
+                }
+                default -> {
+                    System.out.println("Invalid account type selected. Please select again:");
+                    System.out.println("1. Savings Account");
+                    System.out.println("2. Checking Account");
+                    System.out.println("3. Both Savings and Checking Accounts");
+                    accountTypeChoice = input.nextLine().trim();
+                }
             }
-            case "2" -> {
-                System.out.println("Enter initial deposit amount for Checking Account: ");
-                double initialDeposit = Double.parseDouble(input.nextLine().trim());
-                Account checkingAccount = new Account(customer.getUserId(), AccountType.Checking, initialDeposit);
-                accounts.add(checkingAccount);
-                System.out.println("Checking Account created for customer " + customer.getFirstName() + " " +
-                        customer.getLastName());
-            }
-            case "3" -> {
-                System.out.println("Enter initial deposit amount for Savings Account: ");
-                double savingsInitialDeposit = Double.parseDouble(input.nextLine().trim());
-                Account savingsAccount = new Account(customer.getUserId(), AccountType.Savings,
-                        savingsInitialDeposit);
-                System.out.println("Enter initial deposit amount for Checking Account: ");
-                double checkingInitialDeposit = Double.parseDouble(input.nextLine().trim());
-                Account checkingAccount = new Account(customer.getUserId(), AccountType.Checking,
-                        checkingInitialDeposit);
-                accounts.add(savingsAccount);
-                accounts.add(checkingAccount);
-                System.out.println("Both Savings and Checking Accounts created for customer " +
-                        customer.getFirstName() + " " + customer.getLastName());
-            }
-            default -> System.out.println("Invalid account type selected. No account created.");
         }
         return accounts;
     }
+
 
     public User authenticate() {
         while (true) {
@@ -197,6 +230,7 @@ public class Auth {
                         System.out.println("This is your first login. Please change your password.");
                         System.out.println("Enter your new password: ");
                         String newPassword = input.nextLine();
+                        newPassword = validatePasswordRequirements(newPassword);
                         String newSalt = generateSalt();
                         user.setPasswordHash(getPasswordHash(newPassword, newSalt));
                         user.setSalt(newSalt);
@@ -221,6 +255,54 @@ public class Auth {
                 }
             }
         }
+    }
+
+    public void resetPassword(User user) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String currentPassword;
+        String newPassword;
+        String confirmPassword;
+        while (true) {
+            System.out.println("Please enter your current password: ");
+            currentPassword = input.nextLine();
+            System.out.println("Please enter your new password: ");
+            newPassword = input.nextLine();
+            System.out.println("Please confirm your new password: ");
+            confirmPassword = input.nextLine();
+            if (!newPassword.equals(confirmPassword)) {
+                System.out.println("New password and confirmation do not match. Please try again.");
+            } else {
+                break;
+            }
+        }
+        if (!validatePassword(currentPassword, user.getSalt(), user.getPasswordHash())) {
+            System.out.println("Current password is incorrect. Password reset failed.");
+            return;
+        }
+        newPassword = validatePasswordRequirements(newPassword);
+        user.setPasswordHash(getPasswordHash(newPassword, user.getSalt()));
+        if (user.getRole() == UserRole.Banker) {
+            bankerFileHandler.writeToFile(user.getUsername(), user.getUserId(),
+                    objectMapper.writeValueAsString(user));
+        } else if (user.getRole() == UserRole.Customer) {
+            customerFileHandler.writeToFile(user.getUsername(), user.getUserId(),
+                    objectMapper.writeValueAsString(user));
+        }
+
+    }
+
+    private static String validatePasswordRequirements(String newPassword) {
+        if (!isPasswordStrong(newPassword)) {
+            while (!isPasswordStrong(newPassword)) {
+                System.out.println("Password is not strong enough. Please create a password with at least 8 " +
+                        "characters, " +
+                        "including uppercase, lowercase, digit, and special character.");
+                CommonUtil.printSeparatorLine();
+                System.out.println("Please enter your password: ");
+                newPassword = input.nextLine();
+            }
+        }
+        return newPassword;
     }
 
 
@@ -269,13 +351,42 @@ public class Auth {
         System.out.println("2. Checking Account");
         System.out.println("3. Both Savings and Checking Accounts");
         String accountTypeChoice = input.nextLine().trim();
-        System.out.println("Customer account created successfully for " + customer.getFirstName() + " " + customer.getLastName() + "!");
-        System.out.println("Provide the following temporary password to the customer for their first login: " + password);
         ObjectMapper objectMapper = new ObjectMapper();
         createBankingAccountsForCustomer(accountTypeChoice, customer).forEach(account ->
                 accountFileHandler.writeToFile(null, customer.getUserId(), account));
         customerFileHandler.writeToFile(customer.getUsername(), customer.getUserId(),
                 objectMapper.writeValueAsString(customer));
+        System.out.println("Please issue a debit card for the customer.");
+        System.out.println("1. MasterCard");
+        System.out.println("2. MasterCard Titanium");
+        System.out.println("3. MasterCard Platinum");
+        String cardTypeChoice = input.nextLine().trim();
+        switch (cardTypeChoice) {
+            case "1" -> {
+                MasterCard debitCard = new MasterCard(customer.getUserId());
+                debitCardFileHandler.writeToFile(null, customer.getUserId(),
+                        objectMapper.writeValueAsString(debitCard));
+                System.out.println("MasterCard debit card issued for customer " + customer.getFirstName() + " " +
+                        customer.getLastName());
+            }
+            case "2" -> {
+                MasterCardTitanium debitCard = new MasterCardTitanium(customer.getUserId());
+                debitCardFileHandler.writeToFile(null, customer.getUserId(),
+                        objectMapper.writeValueAsString(debitCard));
+                System.out.println("MasterCard Titanium debit card issued for customer " + customer.getFirstName() +
+                        " " + customer.getLastName());
+            }
+            case "3" -> {
+                MasterCardPlatinum debitCard = new MasterCardPlatinum(customer.getUserId());
+                debitCardFileHandler.writeToFile(null, customer.getUserId(),
+                        objectMapper.writeValueAsString(debitCard));
+                System.out.println("MasterCard Platinum debit card issued for customer " + customer.getFirstName() +
+                        " " + customer.getLastName());
+            }
+            default -> System.out.println("Invalid card type selected. No debit card issued.");
+        }
+        System.out.println("Customer account created successfully for " + customer.getFirstName() + " " + customer.getLastName() + "!");
+        System.out.println("Provide the following temporary password to the customer for their first login: " + password);
         return customer;
     }
 
@@ -288,5 +399,12 @@ public class Auth {
 
     public List<Account> getUserAccounts(String customerId) {
         return accountFileHandler.readFromFile(customerId);
+    }
+
+    public DebitCard loadUserDebitCard(User user) {
+        if (user.getRole() == UserRole.Banker) {
+            return null;
+        }
+        return debitCardFileHandler.readFromFile(user.getUserId());
     }
 }

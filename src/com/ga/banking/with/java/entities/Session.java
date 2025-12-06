@@ -3,9 +3,7 @@ package com.ga.banking.with.java.entities;
 import com.ga.banking.with.java.enums.SessionStatus;
 import com.ga.banking.with.java.enums.UserRole;
 import com.ga.banking.with.java.features.Auth;
-import com.ga.banking.with.java.helpers.AccountFileHandler;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -14,7 +12,7 @@ public class Session {
     private SessionStatus status;
     private UserRole role;
     private List<Account> accounts;
-    private AccountFileHandler accountFileHandler;
+    private DebitCard debitCard;
 
     public Session() {
         this.status = SessionStatus.Unauthenticated;
@@ -41,11 +39,12 @@ public class Session {
         return this.status == SessionStatus.Unauthenticated;
     }
 
-    public void initializeSession(User user, List<Account> accounts) {
+    public void initializeSession(User user, List<Account> accounts, DebitCard debitCard) {
         this.user = user;
         this.status = SessionStatus.Active;
         this.role = user.getRole();
         this.accounts = accounts;
+        this.debitCard = debitCard;
     }
 
     public void terminateSession() {
@@ -75,6 +74,7 @@ public class Session {
         System.out.println("3. Deactivate Customer Account");
         System.out.println("4. Activate Customer Account");
         System.out.println("C. Create Banker Account");
+        System.out.println("R. Reset Banker Password");
         System.out.println("Q. Quit");
         switch (input.nextLine()) {
             case "1" -> {
@@ -93,6 +93,9 @@ public class Session {
                     }
                 }
             }
+            case "B", "b" -> {
+                auth.resetPassword(this.user);
+            }
             case "Q", "q" -> {
                 System.out.println("Exiting Banker Menu.");
                 this.terminateSession();
@@ -106,6 +109,10 @@ public class Session {
         System.out.println("Customer Menu:");
         System.out.println("Choose an option:");
         System.out.println("1. View My Accounts");
+        System.out.println("2. Withdraw Funds");
+        System.out.println("3. Deposit Funds");
+        System.out.println("4. Transfer Funds");
+        System.out.println("R. Reset My Password");
         System.out.println("Q. Quit");
         switch (input.nextLine()) {
             case "1" -> {
@@ -117,6 +124,9 @@ public class Session {
                         System.out.println(account.toString());
                     }
                 }
+            }
+            case "R", "r" -> {
+                auth.resetPassword(this.user);
             }
             case "Q", "q" -> {
                 System.out.println("Exiting Customer Menu.");

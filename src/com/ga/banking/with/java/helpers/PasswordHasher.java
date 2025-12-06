@@ -40,5 +40,16 @@ public class PasswordHasher {
         return hashToValidate.equals(hashedPassword);
     }
 
+    public static boolean isPasswordStrong(String password) {
+        if (password.length() < 8) {
+            return false;
+        }
+        boolean hasUppercase = password.chars().anyMatch(Character::isUpperCase);
+        boolean hasLowercase = password.chars().anyMatch(Character::isLowerCase);
+        boolean hasDigit = password.chars().anyMatch(Character::isDigit);
+        boolean hasSpecial = password.chars().anyMatch(ch -> !Character.isLetterOrDigit(ch));
+        return hasUppercase && hasLowercase && hasDigit && hasSpecial;
+    }
+
 
 }

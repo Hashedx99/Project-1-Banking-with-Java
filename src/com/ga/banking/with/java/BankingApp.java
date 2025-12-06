@@ -16,7 +16,7 @@ public class BankingApp {
         System.out.println(" ".repeat(36) + "Welcome to Shadow Moses Bank" + " ".repeat(36));
         CommonUtil.printSeparatorLine();
         User user =  auth.authenticate();
-        session.initializeSession(user, auth.loadUserAccounts(user));
+        session.initializeSession(user, auth.loadUserAccounts(user), auth.loadUserDebitCard(user));
         while (session.isNotTerminated()) {
             session.getUserMenu(auth);
         }
