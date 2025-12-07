@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 
+import static com.ga.banking.with.java.helpers.CommonUtil.parseAccountsFromFile;
 import static com.ga.banking.with.java.helpers.PasswordHasher.generateSalt;
 import static com.ga.banking.with.java.helpers.PasswordHasher.getPasswordHash;
 import static com.ga.banking.with.java.helpers.PasswordHasher.isPasswordStrong;
@@ -406,5 +407,34 @@ public class Auth {
             return null;
         }
         return debitCardFileHandler.readFromFile(user.getUserId());
+    }
+
+    public Account getAccountById(String accountId) {
+        Path accountsPath = Paths.get("Data").resolve("Accounts");
+        if (!Files.exists(accountsPath) || !Files.isDirectory(accountsPath)) {
+            return null;
+        }
+
+        File[] files = accountsPath.toFile().listFiles();
+        if (files == null || files.length == 0) {
+            return null;
+        }
+
+        for (File file : files) {
+            try {
+                List<Account> accounts;
+                ObjectMapper mapper = new ObjectMapper();
+                accounts = parseAccountsFromFile(file, mapper);
+                for (Account account : accounts) {
+                    if (accountId.equals(account.getAccountId())) {
+                        return account;
+                    }
+                }
+            } catch (Exception ignored) {
+                System.out.println("An error occurred while reading accounts from file: " + file.getName());
+            }
+        }
+
+        return null;
     }
 }

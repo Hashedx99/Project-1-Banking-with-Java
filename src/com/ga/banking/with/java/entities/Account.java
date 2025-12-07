@@ -6,7 +6,6 @@ import com.ga.banking.with.java.enums.AccountStatus;
 import com.ga.banking.with.java.enums.AccountType;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 public class Account {
@@ -76,6 +75,28 @@ public class Account {
 
     public AccountStatus getStatus() {
         return status;
+    }
+
+    public double deposit(double amount) {
+        if (amount <= 0) {
+            System.out.println("Deposit amount must be positive.");
+            return balance;
+        }
+        balance += amount;
+        return balance;
+    }
+
+    public double withdraw(double amount) {
+        if (amount <= 0) {
+            System.out.println("Withdrawal amount must be positive.");
+            return balance;
+        }
+        if (amount > balance) {
+            System.out.println("Insufficient funds for withdrawal.");
+            return balance;
+        }
+        balance -= amount;
+        return balance;
     }
 
     @Override

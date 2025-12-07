@@ -6,13 +6,13 @@ import com.ga.banking.with.java.enums.CardType;
 
 
 public class DebitCard {
-    private String accountNumber;
-    private CardType cardType;
-    private double withdrawalLimit;
-    private double transferLimitOwnAccount;
-    private double transferLimitOtherAccount;
-    private double depositLimitOwnAccount;
-    private double depositLimitOtherAccount;
+    private final String accountNumber;
+    private final CardType cardType;
+    private final double withdrawalLimit;
+    private final double transferLimitOwnAccount;
+    private final double transferLimitOtherAccount;
+    private final double depositLimitOwnAccount;
+    private final double depositLimitOtherAccount;
 
     @JsonCreator
     public DebitCard(
@@ -33,45 +33,33 @@ public class DebitCard {
         this.depositLimitOtherAccount = depositLimitOtherAccount;
     }
 
-    public double withdrawFunds(double amount) {
+    public double withdrawFunds(double amount, Account account) {
         if (isAmountInvalid(amount, withdrawalLimit, "Withdrawal")) {
             return -1;
         }
+        account.withdraw(amount);
         System.out.println("Withdrew: " + amount);
         return amount;
     }
 
-    public double transferFundsToOwnAccount(double amount) {
-        if (isAmountInvalid(amount, transferLimitOwnAccount, "Transfer")) {
+    public double transferFunds(double amount, Account fromAccount, Account toAccount, boolean isOwnAccount) {
+        if (isAmountInvalid(amount, isOwnAccount ? transferLimitOwnAccount : transferLimitOtherAccount, "Transfer")) {
             return -1;
         }
+        toAccount.deposit(fromAccount.withdraw(amount));
         System.out.println("Transferred: " + amount);
         return amount;
     }
 
-    public double transferFundsToOtherAccount(double amount) {
-        if (isAmountInvalid(amount, transferLimitOtherAccount, "Transfer")) {
+    public double depositFunds(double amount, Account account, boolean isOwnAccount) {
+        if (isAmountInvalid(amount, isOwnAccount ? depositLimitOwnAccount : depositLimitOtherAccount, "Deposit")) {
             return -1;
         }
-        System.out.println("Transferred: " + amount);
-        return amount;
-    }
-
-    public double depositFundsToOwnAccount(double amount) {
-        if (isAmountInvalid(amount, depositLimitOwnAccount, "Deposit")) {
-            return -1;
-        }
+        account.deposit(amount);
         System.out.println("Deposited: " + amount);
         return amount;
     }
 
-    public double depositFundsToOtherAccount(double amount) {
-        if (isAmountInvalid(amount, depositLimitOtherAccount, "Deposit")) {
-            return -1;
-        }
-        System.out.println("Deposited: " + amount);
-        return amount;
-    }
 
 
     private boolean isAmountInvalid(double amount, double limit, String operationType) {

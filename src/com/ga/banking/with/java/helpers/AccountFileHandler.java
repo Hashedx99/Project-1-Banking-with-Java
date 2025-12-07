@@ -8,10 +8,10 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.ga.banking.with.java.helpers.CommonUtil.createDirectoriesAndWriteFile;
+import static com.ga.banking.with.java.helpers.CommonUtil.parseAccountsFromFile;
 
 public class AccountFileHandler implements FileHandler {
 
@@ -26,15 +26,7 @@ public class AccountFileHandler implements FileHandler {
         Path accountsPath = dataPath.resolve("Accounts");
         File file = accountsPath.resolve(fileName).toFile();
         ObjectMapper mapper = new ObjectMapper();
-        List<Account> accounts;
-        try {
-            accounts = new ArrayList<>(Arrays.asList(mapper.readValue(file, Account[].class)));
-        } catch (Exception e) {
-            Account singleAccount = mapper.readValue(file, Account.class);
-            accounts = new ArrayList<>();
-            accounts.add(singleAccount);
-        }
-        return accounts;
+        return parseAccountsFromFile(file, mapper);
     }
 
     @Override
@@ -52,13 +44,7 @@ public class AccountFileHandler implements FileHandler {
 
             List<Account> accounts;
             if (file.exists()) {
-                try {
-                    accounts = new ArrayList<>(Arrays.asList(mapper.readValue(file, Account[].class)));
-                } catch (Exception e) {
-                    Account singleAccount = mapper.readValue(file, Account.class);
-                    accounts = new ArrayList<>();
-                    accounts.add(singleAccount);
-                }
+                accounts = parseAccountsFromFile(file, mapper);
             } else {
                 accounts = new ArrayList<>();
             }

@@ -1,9 +1,16 @@
 package com.ga.banking.with.java.helpers;
 
+import com.ga.banking.with.java.entities.Account;
+import tools.jackson.databind.ObjectMapper;
+
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class CommonUtil {
     public static void printSeparatorLine() {
@@ -26,5 +33,17 @@ public class CommonUtil {
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
             writer.write(fileContent);
         }
+    }
+
+    public static List<Account> parseAccountsFromFile(File file, ObjectMapper mapper) {
+        List<Account> accounts;
+        try {
+            accounts = new ArrayList<>(Arrays.asList(mapper.readValue(file, Account[].class)));
+        } catch (Exception e) {
+            Account singleAccount = mapper.readValue(file, Account.class);
+            accounts = new ArrayList<>();
+            accounts.add(singleAccount);
+        }
+        return accounts;
     }
 }
