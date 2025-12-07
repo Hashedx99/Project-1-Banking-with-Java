@@ -33,7 +33,7 @@ public class DebitCardFileHandler implements FileHandler {
     @Override
     public boolean writeToFile(String name, String userId, Object fileContent) {
         if (!(fileContent instanceof String)) {
-            System.out.println("Invalid file content for customer. Expected a JSON string.");
+            System.out.println("Invalid file content for debitCard. Expected a JSON string.");
             return false;
         }
         try {

@@ -13,6 +13,7 @@ public class Session {
     private UserRole role;
     private List<Account> accounts;
     private DebitCard debitCard;
+    private List<Transaction> transactions;
 
     public Session() {
         this.status = SessionStatus.Unauthenticated;
@@ -39,12 +40,13 @@ public class Session {
         return this.status == SessionStatus.Unauthenticated;
     }
 
-    public void initializeSession(User user, List<Account> accounts, DebitCard debitCard) {
+    public void initializeSession(User user, List<Account> accounts, DebitCard debitCard, List<Transaction> transactions) {
         this.user = user;
         this.status = SessionStatus.Active;
         this.role = user.getRole();
         this.accounts = accounts;
         this.debitCard = debitCard;
+        this.transactions = transactions;
     }
 
     public void terminateSession() {

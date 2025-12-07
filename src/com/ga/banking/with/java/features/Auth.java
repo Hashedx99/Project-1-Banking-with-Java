@@ -1,13 +1,6 @@
 package com.ga.banking.with.java.features;
 
-import com.ga.banking.with.java.entities.Account;
-import com.ga.banking.with.java.entities.Banker;
-import com.ga.banking.with.java.entities.Customer;
-import com.ga.banking.with.java.entities.DebitCard;
-import com.ga.banking.with.java.entities.MasterCard;
-import com.ga.banking.with.java.entities.MasterCardPlatinum;
-import com.ga.banking.with.java.entities.MasterCardTitanium;
-import com.ga.banking.with.java.entities.User;
+import com.ga.banking.with.java.entities.*;
 import com.ga.banking.with.java.enums.AccountType;
 import com.ga.banking.with.java.enums.Status;
 import com.ga.banking.with.java.enums.UserRole;
@@ -436,5 +429,17 @@ public class Auth {
         }
 
         return null;
+    }
+
+    public List<Transaction> loadUserTransactions(User user) {
+        if (user.getRole() == UserRole.Banker) {
+            return new ArrayList<>();
+        }
+        Path dataPath = Paths.get("Data");
+        Path transactionsPath = dataPath.resolve("Transactions");
+        Path userTransactionsPath = transactionsPath.resolve(user.getUserId());
+        if (!Files.exists(userTransactionsPath) || !Files.isDirectory(userTransactionsPath)) {
+            return new ArrayList<>();
+        }
     }
 }
