@@ -1,6 +1,14 @@
 package com.ga.banking.with.java.features;
 
-import com.ga.banking.with.java.entities.*;
+import com.ga.banking.with.java.entities.Account;
+import com.ga.banking.with.java.entities.Banker;
+import com.ga.banking.with.java.entities.Customer;
+import com.ga.banking.with.java.entities.DebitCard;
+import com.ga.banking.with.java.entities.MasterCard;
+import com.ga.banking.with.java.entities.MasterCardPlatinum;
+import com.ga.banking.with.java.entities.MasterCardTitanium;
+import com.ga.banking.with.java.entities.Transaction;
+import com.ga.banking.with.java.entities.User;
 import com.ga.banking.with.java.enums.AccountType;
 import com.ga.banking.with.java.enums.Status;
 import com.ga.banking.with.java.enums.UserRole;
@@ -9,6 +17,7 @@ import com.ga.banking.with.java.helpers.BankerFileHandler;
 import com.ga.banking.with.java.helpers.CommonUtil;
 import com.ga.banking.with.java.helpers.CustomerFileHandler;
 import com.ga.banking.with.java.helpers.DebitCardFileHandler;
+import com.ga.banking.with.java.helpers.TransactionFileHandler;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.File;
@@ -28,12 +37,14 @@ import static com.ga.banking.with.java.helpers.PasswordHasher.generateSalt;
 import static com.ga.banking.with.java.helpers.PasswordHasher.getPasswordHash;
 import static com.ga.banking.with.java.helpers.PasswordHasher.isPasswordStrong;
 import static com.ga.banking.with.java.helpers.PasswordHasher.validatePassword;
+import static java.util.Arrays.stream;
 
 public class Auth {
     private static final BankerFileHandler bankerFileHandler = new BankerFileHandler();
     private static final CustomerFileHandler customerFileHandler = new CustomerFileHandler();
     private static final AccountFileHandler accountFileHandler = new AccountFileHandler();
     private static final DebitCardFileHandler debitCardFileHandler = new DebitCardFileHandler();
+    private static final TransactionFileHandler transactionFileHandler = new TransactionFileHandler();
     private static final Scanner input = new Scanner(System.in);
     private static final SecureRandom secureRandom = new SecureRandom();
 
@@ -131,7 +142,7 @@ public class Auth {
             throw new RuntimeException(role == UserRole.Banker ? "Banker" : "Customer" + " files are missing.");
         }
         List<File> fileList =
-                Arrays.stream(Objects.requireNonNull(path.toFile().listFiles(file -> file.getName().split(
+                stream(Objects.requireNonNull(path.toFile().listFiles(file -> file.getName().split(
                         "-")[1].equals(username)))).toList();
         if (fileList.size() > 1) {
             throw new RuntimeException(role == UserRole.Banker ? "Banker" : "Customer" + " files are duplicated.");
@@ -191,6 +202,19 @@ public class Auth {
         return accounts;
     }
 
+    private static String validatePasswordRequirements(String newPassword) {
+        if (!isPasswordStrong(newPassword)) {
+            while (!isPasswordStrong(newPassword)) {
+                System.out.println("Password is not strong enough. Please create a password with at least 8 " +
+                        "characters, " +
+                        "including uppercase, lowercase, digit, and special character.");
+                CommonUtil.printSeparatorLine();
+                System.out.println("Please enter your password: ");
+                newPassword = input.nextLine();
+            }
+        }
+        return newPassword;
+    }
 
     public User authenticate() {
         while (true) {
@@ -284,21 +308,6 @@ public class Auth {
         }
 
     }
-
-    private static String validatePasswordRequirements(String newPassword) {
-        if (!isPasswordStrong(newPassword)) {
-            while (!isPasswordStrong(newPassword)) {
-                System.out.println("Password is not strong enough. Please create a password with at least 8 " +
-                        "characters, " +
-                        "including uppercase, lowercase, digit, and special character.");
-                CommonUtil.printSeparatorLine();
-                System.out.println("Please enter your password: ");
-                newPassword = input.nextLine();
-            }
-        }
-        return newPassword;
-    }
-
 
     public Customer createUserForCustomer() {
         System.out.println("Customer username: ");
@@ -435,11 +444,49 @@ public class Auth {
         if (user.getRole() == UserRole.Banker) {
             return new ArrayList<>();
         }
-        Path dataPath = Paths.get("Data");
-        Path transactionsPath = dataPath.resolve("Transactions");
-        Path userTransactionsPath = transactionsPath.resolve(user.getUserId());
-        if (!Files.exists(userTransactionsPath) || !Files.isDirectory(userTransactionsPath)) {
-            return new ArrayList<>();
+        if (user.getRole() == UserRole.Customer) {
+            return transactionFileHandler.readFromFile(user.getUserId());
+        }
+        return new ArrayList<>();
+    }
+
+    public void createTransactionRecord(User user, Transaction transaction) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            List<Account> userAccounts = loadUserAccounts(user);
+            Account sourceAccount =
+                    userAccounts.stream().filter(account -> account.getAccountId().equals(transaction.getFromAccountId())).findFirst().orElse(null);
+            Account destinationAccount =
+                    userAccounts.stream().filter(account -> account.getAccountId().equals(transaction.getToAccountId())).findFirst().orElse(null);
+            switch (transaction.getTransactionType()) {
+                case DEPOSIT -> {
+                    if (destinationAccount != null) {
+                        destinationAccount.setBalance(destinationAccount.getBalance() + transaction.getAmount());
+                        accountFileHandler.writeToFile(null, user.getUserId(), destinationAccount);
+                    }
+                }
+                case WITHDRAWAL -> {
+                    if (sourceAccount != null) {
+                        sourceAccount.setBalance(sourceAccount.getBalance() - transaction.getAmount());
+                        accountFileHandler.writeToFile(null, user.getUserId(), sourceAccount);
+                    }
+                }
+                case TRANSFER -> {
+                    if (sourceAccount != null) {
+                        sourceAccount.setBalance(sourceAccount.getBalance() - transaction.getAmount());
+                        accountFileHandler.writeToFile(null, user.getUserId(), sourceAccount);
+                    }
+                    if (destinationAccount != null) {
+                        destinationAccount.setBalance(destinationAccount.getBalance() + transaction.getAmount());
+                        accountFileHandler.writeToFile(null, user.getUserId(), destinationAccount);
+                    }
+                }
+            }
+            transactionFileHandler.writeToFile(user.getUserId(), transaction.getTransactionId(),
+                    objectMapper.writeValueAsString(transaction));
+        } catch (Exception e) {
+            System.out.println("An error occurred while creating transaction record.");
+            System.out.println(e.getMessage());
         }
     }
 }

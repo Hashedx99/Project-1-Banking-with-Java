@@ -3,6 +3,7 @@ package com.ga.banking.with.java.entities;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ga.banking.with.java.enums.TransactionStatus;
+import com.ga.banking.with.java.enums.TransactionType;
 
 import java.time.LocalDateTime;
 
@@ -14,6 +15,7 @@ public class Transaction {
     private final LocalDateTime timestamp;
     private final TransactionStatus status;
     private final String description;
+    private final TransactionType transactionType;
 
     @JsonCreator
     public Transaction(
@@ -23,7 +25,9 @@ public class Transaction {
             @JsonProperty("amount") double amount,
             @JsonProperty("timestamp") LocalDateTime timestamp,
             @JsonProperty("status") TransactionStatus status,
-            @JsonProperty("description") String description) {
+            @JsonProperty("description") String description,
+            @JsonProperty("transactionType") TransactionType transactionType
+            ) {
         this.transactionId = transactionId;
         this.fromAccountId = fromAccountId;
         this.toAccountId = toAccountId;
@@ -31,6 +35,7 @@ public class Transaction {
         this.timestamp = timestamp;
         this.status = status;
         this.description = description;
+        this.transactionType = transactionType;
     }
 
     public String getTransactionId() {
@@ -59,5 +64,9 @@ public class Transaction {
 
     public String getDescription() {
         return description;
+    }
+
+    public TransactionType getTransactionType() {
+        return transactionType;
     }
 }

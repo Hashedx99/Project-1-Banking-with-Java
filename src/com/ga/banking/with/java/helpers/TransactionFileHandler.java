@@ -7,6 +7,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -14,7 +15,7 @@ import static com.ga.banking.with.java.helpers.CommonUtil.createDirectoriesAndWr
 
 public class TransactionFileHandler implements FileHandler {
     @Override
-    public Object readFromFile(Object userId) {
+    public List<Transaction> readFromFile(Object userId) {
         if (!(userId instanceof String)) {
             System.out.println("Invalid userId. Expected a String.");
             return null;
@@ -48,9 +49,8 @@ public class TransactionFileHandler implements FileHandler {
         }
         try {
             String fileName = transactionId + ".json";
-            Path dataPath = Paths.get("Data");
-            Path transactionsDataPath = dataPath.resolve("Transactions");
-            Path userTransactionsPath = transactionsDataPath.resolve(id);
+            Path dataPath = Paths.get("Data", "Transactions");
+            Path userTransactionsPath = dataPath.resolve(id);
 
             createDirectoriesAndWriteFile((String) fileContent, fileName, dataPath, userTransactionsPath);
         } catch (Exception e) {
