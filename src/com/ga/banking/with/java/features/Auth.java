@@ -404,11 +404,19 @@ public class Auth {
         return accountFileHandler.readFromFile(customerId);
     }
 
-    public DebitCard loadUserDebitCard(User user) {
+    public DebitCard loadUserDebitCard(User user, AccountType accountType) {
         if (user.getRole() == UserRole.Banker) {
             return null;
         }
-        return debitCardFileHandler.readFromFile(user.getUserId());
+        List<Account> accounts = loadUserAccounts(user);
+        Account userAccount = accounts.stream()
+                .filter(account -> account.getAccountType() == accountType)
+                .findFirst()
+                .orElse(null);
+        if (userAccount == null) {
+            return null;
+        }
+        return debitCardFileHandler.readFromFile(userAccount.getAccountId());
     }
 
     public Account getAccountById(String accountId) {

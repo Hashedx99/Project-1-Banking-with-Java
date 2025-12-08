@@ -43,6 +43,10 @@ public class DebitCard {
     }
 
     public double transferFunds(double amount, Account fromAccount, Account toAccount, boolean isOwnAccount) {
+        if (fromAccount.getAccountId().equals(toAccount.getAccountId())) {
+            System.out.println("Cannot transfer to the same account.");
+            return -1;
+        }
         if (isAmountInvalid(amount, isOwnAccount ? transferLimitOwnAccount : transferLimitOtherAccount, "Transfer")) {
             return -1;
         }
