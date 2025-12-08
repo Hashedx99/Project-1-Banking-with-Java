@@ -26,7 +26,7 @@ public class TransactionFileHandler implements FileHandler {
         Path userTransactionsPath = transactionsDataPath.resolve((String) userId);
         File[] files = userTransactionsPath.resolve(fileName).toFile().listFiles();
         if (files == null || files.length == 0) {
-            System.out.println("No transaction files found for userId: " + userId);
+//            System.out.println("No transaction files found for userId: " + userId);
             return null;
         }
         Stream<File> fileStream = Stream.of(files);

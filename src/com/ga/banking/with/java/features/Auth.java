@@ -26,7 +26,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
@@ -216,6 +215,52 @@ public class Auth {
         return newPassword;
     }
 
+    private static void createDebitCardsForCustomerAccount(Account account) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        System.out.println("Please select a card type to issue to the customers " + account.getAccountType() + " " +
+                "account.");
+        System.out.println("1. MasterCard");
+        System.out.println("2. MasterCard Titanium");
+        System.out.println("3. MasterCard Platinum");
+        boolean validCardSelected = false;
+        while (!validCardSelected) {
+            String cardTypeChoice = input.nextLine().trim();
+            switch (cardTypeChoice) {
+                case "1" -> {
+                    MasterCard debitCard = new MasterCard(account.getAccountId());
+                    debitCardFileHandler.writeToFile(null, account.getAccountId(),
+                            objectMapper.writeValueAsString(debitCard));
+                    System.out.println("MasterCard debit card issued for  " + account.getAccountType() + " account");
+                    validCardSelected = true;
+                }
+                case "2" -> {
+                    MasterCardTitanium debitCard = new MasterCardTitanium(account.getAccountId());
+                    debitCardFileHandler.writeToFile(null, account.getAccountId(),
+                            objectMapper.writeValueAsString(debitCard));
+                    System.out.println("MasterCard Titanium debit card issued for " + account.getAccountType() + " " +
+                            "account");
+                    validCardSelected = true;
+                }
+                case "3" -> {
+                    MasterCardPlatinum debitCard = new MasterCardPlatinum(account.getAccountId());
+                    debitCardFileHandler.writeToFile(null, account.getAccountId(),
+                            objectMapper.writeValueAsString(debitCard));
+                    System.out.println("MasterCard Platinum debit card issued for customer " + account.getAccountType() + " account");
+                    validCardSelected = true;
+                }
+                default -> {
+                    System.out.println("Invalid card type selected.");
+                    System.out.println("Please select a card type to issue to the customers " + account.getAccountType() + " " +
+                            "account.");
+                    System.out.println("1. MasterCard");
+                    System.out.println("2. MasterCard Titanium");
+                    System.out.println("3. MasterCard Platinum");
+                }
+
+            }
+        }
+    }
+
     public User authenticate() {
         while (true) {
             Path dataPath = Paths.get("Data");
@@ -355,39 +400,12 @@ public class Auth {
         System.out.println("3. Both Savings and Checking Accounts");
         String accountTypeChoice = input.nextLine().trim();
         ObjectMapper objectMapper = new ObjectMapper();
-        createBankingAccountsForCustomer(accountTypeChoice, customer).forEach(account ->
+        List<Account> accounts = createBankingAccountsForCustomer(accountTypeChoice, customer);
+        accounts.forEach(account ->
                 accountFileHandler.writeToFile(null, customer.getUserId(), account));
         customerFileHandler.writeToFile(customer.getUsername(), customer.getUserId(),
                 objectMapper.writeValueAsString(customer));
-        System.out.println("Please issue a debit card for the customer.");
-        System.out.println("1. MasterCard");
-        System.out.println("2. MasterCard Titanium");
-        System.out.println("3. MasterCard Platinum");
-        String cardTypeChoice = input.nextLine().trim();
-        switch (cardTypeChoice) {
-            case "1" -> {
-                MasterCard debitCard = new MasterCard(customer.getUserId());
-                debitCardFileHandler.writeToFile(null, customer.getUserId(),
-                        objectMapper.writeValueAsString(debitCard));
-                System.out.println("MasterCard debit card issued for customer " + customer.getFirstName() + " " +
-                        customer.getLastName());
-            }
-            case "2" -> {
-                MasterCardTitanium debitCard = new MasterCardTitanium(customer.getUserId());
-                debitCardFileHandler.writeToFile(null, customer.getUserId(),
-                        objectMapper.writeValueAsString(debitCard));
-                System.out.println("MasterCard Titanium debit card issued for customer " + customer.getFirstName() +
-                        " " + customer.getLastName());
-            }
-            case "3" -> {
-                MasterCardPlatinum debitCard = new MasterCardPlatinum(customer.getUserId());
-                debitCardFileHandler.writeToFile(null, customer.getUserId(),
-                        objectMapper.writeValueAsString(debitCard));
-                System.out.println("MasterCard Platinum debit card issued for customer " + customer.getFirstName() +
-                        " " + customer.getLastName());
-            }
-            default -> System.out.println("Invalid card type selected. No debit card issued.");
-        }
+        accounts.forEach(Auth::createDebitCardsForCustomerAccount);
         System.out.println("Customer account created successfully for " + customer.getFirstName() + " " + customer.getLastName() + "!");
         System.out.println("Provide the following temporary password to the customer for their first login: " + password);
         return customer;
@@ -458,37 +476,15 @@ public class Auth {
         return new ArrayList<>();
     }
 
-    public void createTransactionRecord(User user, Transaction transaction) {
+    public void createTransactionRecord(User user, Transaction transaction, Account sourceAccount,
+                                        Account destinationAccount) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            List<Account> userAccounts = loadUserAccounts(user);
-            Account sourceAccount =
-                    userAccounts.stream().filter(account -> account.getAccountId().equals(transaction.getFromAccountId())).findFirst().orElse(null);
-            Account destinationAccount =
-                    userAccounts.stream().filter(account -> account.getAccountId().equals(transaction.getToAccountId())).findFirst().orElse(null);
-            switch (transaction.getTransactionType()) {
-                case DEPOSIT -> {
-                    if (destinationAccount != null) {
-                        destinationAccount.setBalance(destinationAccount.getBalance() + transaction.getAmount());
-                        accountFileHandler.writeToFile(null, user.getUserId(), destinationAccount);
-                    }
-                }
-                case WITHDRAWAL -> {
-                    if (sourceAccount != null) {
-                        sourceAccount.setBalance(sourceAccount.getBalance() - transaction.getAmount());
-                        accountFileHandler.writeToFile(null, user.getUserId(), sourceAccount);
-                    }
-                }
-                case TRANSFER -> {
-                    if (sourceAccount != null) {
-                        sourceAccount.setBalance(sourceAccount.getBalance() - transaction.getAmount());
-                        accountFileHandler.writeToFile(null, user.getUserId(), sourceAccount);
-                    }
-                    if (destinationAccount != null) {
-                        destinationAccount.setBalance(destinationAccount.getBalance() + transaction.getAmount());
-                        accountFileHandler.writeToFile(null, user.getUserId(), destinationAccount);
-                    }
-                }
+            if (sourceAccount != null) {
+                accountFileHandler.writeToFile(null, user.getUserId(), sourceAccount);
+            }
+            if (destinationAccount != null) {
+                accountFileHandler.writeToFile(null, user.getUserId(), destinationAccount);
             }
             transactionFileHandler.writeToFile(user.getUserId(), transaction.getTransactionId(),
                     objectMapper.writeValueAsString(transaction));

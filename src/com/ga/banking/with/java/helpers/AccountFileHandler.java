@@ -30,8 +30,8 @@ public class AccountFileHandler implements FileHandler {
     }
 
     @Override
-    public boolean writeToFile(String name, String userId, Object account) {
-        if (!(account instanceof Account)) {
+    public boolean writeToFile(String name, String userId, Object pAccount) {
+        if (!(pAccount instanceof Account)) {
             System.out.println("Invalid object type. Expected Account.");
             return false;
         }
@@ -48,8 +48,10 @@ public class AccountFileHandler implements FileHandler {
             } else {
                 accounts = new ArrayList<>();
             }
-
-            accounts.add((Account) account);
+            if (!accounts.isEmpty()) {
+                accounts.stream().filter(account -> account.getAccountId().equals(((Account) pAccount).getAccountId())).findFirst().ifPresent(accounts::remove);
+            }
+            accounts.add((Account) pAccount);
 
             createDirectoriesAndWriteFile(mapper.writeValueAsString(accounts), fileName, dataPath, accountsPath);
         } catch (Exception e) {

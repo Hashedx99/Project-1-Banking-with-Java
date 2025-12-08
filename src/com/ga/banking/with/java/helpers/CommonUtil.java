@@ -36,7 +36,10 @@ public class CommonUtil {
     }
 
     public static List<Account> parseAccountsFromFile(File file, ObjectMapper mapper) {
-        List<Account> accounts;
+        List<Account> accounts = new ArrayList<>();
+        if (file == null || !file.exists() || !file.isFile()) {
+            return accounts;
+        }
         try {
             accounts = new ArrayList<>(Arrays.asList(mapper.readValue(file, Account[].class)));
         } catch (Exception e) {

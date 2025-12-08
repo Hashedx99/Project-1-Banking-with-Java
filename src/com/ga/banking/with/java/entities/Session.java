@@ -140,7 +140,7 @@ public class Session {
                     auth.createTransactionRecord(this.user, new Transaction(UUID.randomUUID().toString(),
                             selectedAccount.getAccountId(), null, withdrawAmount, LocalDateTime.now(),
                             TransactionStatus.COMPLETED, "Withdrawal from account " + selectedAccount.getAccountId(),
-                            TransactionType.WITHDRAWAL));
+                            TransactionType.WITHDRAWAL), selectedAccount, null);
                     System.out.println("Withdrawal successful!");
                 }
 
@@ -155,7 +155,7 @@ public class Session {
                     auth.createTransactionRecord(this.user, new Transaction(UUID.randomUUID().toString(),
                             null, selectedAccount.getAccountId(), depositAmount, LocalDateTime.now(),
                             TransactionStatus.COMPLETED, "Deposit to account " + selectedAccount.getAccountId(),
-                            TransactionType.DEPOSIT));
+                            TransactionType.DEPOSIT), selectedAccount, null);
                     System.out.println("Deposit successful!");
                 }
             }
@@ -169,7 +169,7 @@ public class Session {
                     auth.createTransactionRecord(this.user, new Transaction(UUID.randomUUID().toString(),
                             null, selectedAccount.getAccountId(), depositAmount, LocalDateTime.now(),
                             TransactionStatus.COMPLETED, "Deposit to account " + selectedAccount.getAccountId(),
-                            TransactionType.DEPOSIT));
+                            TransactionType.DEPOSIT), selectedAccount, null);
                     System.out.println("Deposit successful!");
                 }
             }
@@ -187,7 +187,7 @@ public class Session {
                             selectedAccount.getAccountId(), otherAccount.getAccountId(), transferAmount,
                             LocalDateTime.now(), TransactionStatus.COMPLETED,
                             "Transfer from account " + selectedAccount.getAccountId() + " to account " +
-                                    otherAccount.getAccountId(), TransactionType.TRANSFER));
+                                    otherAccount.getAccountId(), TransactionType.TRANSFER), selectedAccount, otherAccount);
                     System.out.println("Transfer successful!");
                 }
             }
@@ -205,7 +205,7 @@ public class Session {
                             selectedAccount.getAccountId(), otherAccount.getAccountId(), transferAmount,
                             LocalDateTime.now(), TransactionStatus.COMPLETED, "Transfer from account " +
                             selectedAccount.getAccountId() + " to account " + otherAccount.getAccountId(),
-                            TransactionType.TRANSFER));
+                            TransactionType.TRANSFER), selectedAccount, otherAccount);
                     System.out.println("Transfer successful!");
                 }
             }
