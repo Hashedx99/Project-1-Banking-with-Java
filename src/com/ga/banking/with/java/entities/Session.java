@@ -141,7 +141,9 @@ public class Session {
                 double withdrawResult = debitCard(selectedAccount).withdrawFunds(withdrawAmount, selectedAccount);
                 if (withdrawResult != -1) {
                     auth.createTransactionRecord(this.user, new Transaction(UUID.randomUUID().toString(),
-                            selectedAccount.getAccountId(), null, withdrawAmount, LocalDateTime.now(),
+                            selectedAccount.getAccountId(), null, withdrawAmount, selectedAccount.getBalance(),
+                            null,
+                            LocalDateTime.now(),
                             TransactionStatus.COMPLETED, "Withdrawal from account " + selectedAccount.getAccountId(),
                             TransactionType.WITHDRAWAL), selectedAccount, null);
                     System.out.println("Withdrawal successful!");
@@ -156,7 +158,8 @@ public class Session {
                 double depositResult = debitCard(selectedAccount).depositFunds(depositAmount, selectedAccount, true);
                 if (depositResult != -1) {
                     auth.createTransactionRecord(this.user, new Transaction(UUID.randomUUID().toString(),
-                            null, selectedAccount.getAccountId(), depositAmount, LocalDateTime.now(),
+                            null, selectedAccount.getAccountId(), depositAmount, null, selectedAccount.getBalance(),
+                            LocalDateTime.now(),
                             TransactionStatus.COMPLETED, "Deposit to account " + selectedAccount.getAccountId(),
                             TransactionType.DEPOSIT), selectedAccount, null);
                     System.out.println("Deposit successful!");
@@ -170,7 +173,8 @@ public class Session {
                 double depositResult = debitCard(selectedAccount).depositFunds(depositAmount, selectedAccount, false);
                 if (depositResult != -1) {
                     auth.createTransactionRecord(this.user, new Transaction(UUID.randomUUID().toString(),
-                            null, selectedAccount.getAccountId(), depositAmount, LocalDateTime.now(),
+                            null, selectedAccount.getAccountId(), depositAmount, null, selectedAccount.getBalance(),
+                            LocalDateTime.now(),
                             TransactionStatus.COMPLETED, "Deposit to account " + selectedAccount.getAccountId(),
                             TransactionType.DEPOSIT), selectedAccount, null);
                     System.out.println("Deposit successful!");
@@ -183,14 +187,17 @@ public class Session {
                 Account otherAccount = getAccount(input);
                 System.out.println("Enter amount to transfer:");
                 double transferAmount = input.nextDouble();
-                double transferResult = debitCard(selectedAccount).transferFunds(transferAmount, selectedAccount, otherAccount,
+                double transferResult = debitCard(selectedAccount).transferFunds(transferAmount, selectedAccount,
+                        otherAccount,
                         true);
                 if (transferResult != -1) {
                     auth.createTransactionRecord(this.user, new Transaction(UUID.randomUUID().toString(),
-                            selectedAccount.getAccountId(), otherAccount.getAccountId(), transferAmount,
-                            LocalDateTime.now(), TransactionStatus.COMPLETED,
-                            "Transfer from account " + selectedAccount.getAccountId() + " to account " +
-                                    otherAccount.getAccountId(), TransactionType.TRANSFER), selectedAccount, otherAccount);
+                                    selectedAccount.getAccountId(), otherAccount.getAccountId(), transferAmount,
+                                    selectedAccount.getBalance(), otherAccount.getBalance(),
+                                    LocalDateTime.now(), TransactionStatus.COMPLETED,
+                                    "Transfer from account " + selectedAccount.getAccountId() + " to account " +
+                                            otherAccount.getAccountId(), TransactionType.TRANSFER), selectedAccount,
+                            otherAccount);
                     System.out.println("Transfer successful!");
                 }
             }
@@ -201,11 +208,13 @@ public class Session {
                 Account otherAccount = getOtherAccount(input, auth);
                 System.out.println("Enter amount to transfer:");
                 double transferAmount = input.nextDouble();
-                double transferResult = debitCard(selectedAccount).transferFunds(transferAmount, selectedAccount, otherAccount,
+                double transferResult = debitCard(selectedAccount).transferFunds(transferAmount, selectedAccount,
+                        otherAccount,
                         false);
                 if (transferResult != -1) {
                     auth.createTransactionRecord(this.user, new Transaction(UUID.randomUUID().toString(),
                             selectedAccount.getAccountId(), otherAccount.getAccountId(), transferAmount,
+                            selectedAccount.getBalance(), otherAccount.getBalance(),
                             LocalDateTime.now(), TransactionStatus.COMPLETED, "Transfer from account " +
                             selectedAccount.getAccountId() + " to account " + otherAccount.getAccountId(),
                             TransactionType.TRANSFER), selectedAccount, otherAccount);

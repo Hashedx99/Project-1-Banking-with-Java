@@ -1,9 +1,11 @@
 {
-  "transactionId": "0925f027-c876-4448-a604-cffab6d83ee8",
+  "transactionId": "1e2d719d-c01b-4c91-9269-f84ea7a149e8",
   "fromAccountId": "80a62049-91e4-40c6-89a8-fb0558b0bcd3",
   "toAccountId": null,
-  "amount": 5454.0,
-  "timestamp": "2025-12-08T19:51:02.3013498",
+  "amount": 5000.0,
+  "fromAccountPostTransactionBalance": 5485000.0,
+  "toAccountPostTransactionBalance": null,
+  "timestamp": "2025-12-09T17:25:39.855222",
   "status": "COMPLETED",
   "description": "Withdrawal from account 80a62049-91e4-40c6-89a8-fb0558b0bcd3",
   "transactionType": "WITHDRAWAL"
