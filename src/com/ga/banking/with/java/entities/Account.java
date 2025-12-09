@@ -91,22 +91,45 @@ public class Account {
             System.out.println("Withdrawal amount must be positive.");
             return balance;
         }
+        if (balance < 0) {
+            if (amount > 100) {
+                System.out.println("Account is overdrawn. Cannot withdraw more than $100 while balance is negative.");
+                return balance;
+            }
+            handleOverdraft(amount);
+            return balance;
+        }
         if (amount > balance) {
-            System.out.println("Insufficient funds for withdrawal.");
+            handleOverdraft(amount);
             return balance;
         }
         balance -= amount;
         return balance;
     }
 
+    private void handleOverdraft(double amount) {
+        this.overdraftCount++;
+        balance -= amount;
+        System.out.println("Overdrafted: " + amount);
+        if (overdraftCount == 2) {
+            System.out.println("Warning: You have reached the maximum number of overdrafts allowed.");
+            System.out.println("your account is now frozen until you pay off the negative balance.");
+            this.status = AccountStatus.Frozen;
+        }
+    }
+
     @Override
     public String toString() {
-        return "accountId='" + accountId + '\'' +
-                ", userId='" + userId + '\'' +
-                ", accountType=" + accountType +
-                ", balance=" + balance +
-                ", status=" + status +
-                ", createdAt=" + createdAt +
-                ", overdraftCount=" + overdraftCount;
+        StringBuilder sb = new StringBuilder();
+        sb.append("Account ").append(this.accountId)
+                .append(" | Type: ").append(this.accountType)
+                .append(" | Balance: ").append(this.balance)
+                .append(" | Status: ").append(this.status);
+
+        if (this.overdraftCount > 0) {
+            sb.append(" | Overdrafts: ").append(this.overdraftCount);
+        }
+
+        return sb.toString();
     }
 }
