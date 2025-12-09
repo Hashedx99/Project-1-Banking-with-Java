@@ -22,11 +22,13 @@ import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 
 import static com.ga.banking.with.java.helpers.CommonUtil.parseAccountsFromFile;
+import static com.ga.banking.with.java.helpers.CommonUtil.printSeparatorLine;
 import static com.ga.banking.with.java.service.PasswordHasher.generateSalt;
 import static com.ga.banking.with.java.service.PasswordHasher.getPasswordHash;
 import static com.ga.banking.with.java.service.PasswordHasher.isPasswordStrong;
@@ -487,5 +489,42 @@ public class Auth {
             System.out.println("An error occurred while creating transaction record.");
             System.out.println(e.getMessage());
         }
+    }
+
+    public void getAccountTransactions(User user, Account account) {
+        List<Transaction> unfilteredTransactions = loadUserTransactions(user);
+        List<Transaction> filteredAndSortedTransactions =
+                unfilteredTransactions.stream().filter(transaction -> account.getAccountId().equals(transaction.getToAccountId()) || account.getAccountId().equals(transaction.getFromAccountId())).sorted(Comparator.comparing(Transaction::getTimestamp)
+                ).toList();
+        if (filteredAndSortedTransactions.isEmpty()) {
+            System.out.println("No Transactions for account" + account);
+            return;
+        }
+        header(account);
+        filteredAndSortedTransactions.forEach(transaction -> transaction.toStatement(account));
+    }
+
+    private void header(Account account) {
+        String availableBal;
+        try {
+            availableBal = String.format("%,.2f", account.getBalance());
+        } catch (Exception e) {
+            availableBal = "";
+        }
+        printSeparatorLine(267);
+        System.out.println("Account Balance: " + availableBal);
+        printSeparatorLine(267);
+        String format = "%-19s | %-10s | %13s | %-40s %-40s | %-26s | %-10s | %-90s";
+        String header = String.format(format,
+                "Time",
+                "Type",
+                "Amount",
+                "From Account",
+                "To Account",
+                "Balance",
+                "Status",
+                "Description");
+        String separator = header.replaceAll("[^|]", "-");
+        System.out.println(header + System.lineSeparator() + separator);
     }
 }

@@ -118,11 +118,12 @@ public class Session {
         System.out.println("Customer Menu:");
         System.out.println("Choose an option:");
         System.out.println("1. View My Accounts");
-        System.out.println("2. Withdraw Funds");
-        System.out.println("3. Deposit Funds to My Account");
-        System.out.println("4. Deposit Funds to Another Account");
-        System.out.println("5. Transfer Funds to My Account");
-        System.out.println("6. Transfer Funds to Another Account");
+        System.out.println("2. Show Transaction History");
+        System.out.println("3. Withdraw Funds");
+        System.out.println("4. Deposit Funds to My Account");
+        System.out.println("5. Deposit Funds to Another Account");
+        System.out.println("6. Transfer Funds to My Account");
+        System.out.println("7. Transfer Funds to Another Account");
         System.out.println("R. Reset My Password");
         System.out.println("Q. Quit");
         switch (input.nextLine()) {
@@ -137,8 +138,22 @@ public class Session {
                 }
             }
             case "2" -> {
-                System.out.println("Select an account to withdraw from:");
+                System.out.println("Select an account to view transactions or B to go back:");
                 Account selectedAccount = getAccount(input);
+                if (selectedAccount == null) {
+                    System.out.println("Operation cancelled, returning to menu.");
+                    return;
+                }
+
+                auth.getAccountTransactions(this.user, selectedAccount);
+            }
+            case "3" -> {
+                System.out.println("Select an account to withdraw from or B to go back:");
+                Account selectedAccount = getAccount(input);
+                if (selectedAccount == null) {
+                    System.out.println("Operation cancelled, returning to menu.");
+                    return;
+                }
                 System.out.println("Enter amount to withdraw:");
                 double withdrawAmount = input.nextDouble();
                 double withdrawResult = debitCard(selectedAccount).withdrawFunds(withdrawAmount, selectedAccount);
@@ -153,9 +168,13 @@ public class Session {
                 }
 
             }
-            case "3" -> {
-                System.out.println("Select an account to deposit to:");
+            case "4" -> {
+                System.out.println("Select an account to deposit to or B to go back:");
                 Account selectedAccount = getAccount(input);
+                if (selectedAccount == null) {
+                    System.out.println("Operation cancelled, returning to menu.");
+                    return;
+                }
                 System.out.println("Enter amount to deposit:");
                 double depositAmount = input.nextDouble();
                 double depositResult = debitCard(selectedAccount).depositFunds(depositAmount, selectedAccount, true);
@@ -168,9 +187,12 @@ public class Session {
                     System.out.println("Deposit successful!");
                 }
             }
-            case "4" -> {
-                System.out.println("Select an account to deposit to:");
+            case "5" -> {
                 Account selectedAccount = getOtherAccount(input, auth);
+                if (selectedAccount == null) {
+                    System.out.println("Operation cancelled, returning to menu.");
+                    return;
+                }
                 System.out.println("Enter amount to deposit:");
                 double depositAmount = input.nextDouble();
                 double depositResult = debitCard(selectedAccount).depositFunds(depositAmount, selectedAccount, false);
@@ -183,11 +205,15 @@ public class Session {
                     System.out.println("Deposit successful!");
                 }
             }
-            case "5" -> {
-                System.out.println("Select an account to transfer from:");
+            case "6" -> {
+                System.out.println("Select an account to transfer from or B to go back:");
                 Account selectedAccount = getAccount(input);
                 System.out.println("Select an account to transfer to:");
                 Account otherAccount = getAccount(input);
+                if (otherAccount == null || selectedAccount == null) {
+                    System.out.println("Operation cancelled, returning to menu.");
+                    return;
+                }
                 System.out.println("Enter amount to transfer:");
                 double transferAmount = input.nextDouble();
                 double transferResult = debitCard(selectedAccount).transferFunds(transferAmount, selectedAccount,
@@ -198,17 +224,21 @@ public class Session {
                                     selectedAccount.getAccountId(), otherAccount.getAccountId(), transferAmount,
                                     selectedAccount.getBalance(), otherAccount.getBalance(),
                                     LocalDateTime.now(), TransactionStatus.COMPLETED,
-                                    "Transfer from account " + selectedAccount.getAccountId() + " to account " +
+                                    "Transfer from " + selectedAccount.getAccountId() + " -> " +
                                             otherAccount.getAccountId(), TransactionType.TRANSFER), selectedAccount,
                             otherAccount);
                     System.out.println("Transfer successful!");
                 }
             }
-            case "6" -> {
-                System.out.println("Select an account to transfer from:");
+            case "7" -> {
+                System.out.println("Select an account to transfer from or B to go back:");
                 Account selectedAccount = getAccount(input);
                 System.out.println("Select an account to transfer to:");
                 Account otherAccount = getOtherAccount(input, auth);
+                if (otherAccount == null || selectedAccount == null) {
+                    System.out.println("Operation cancelled, returning to menu.");
+                    return;
+                }
                 System.out.println("Enter amount to transfer:");
                 double transferAmount = input.nextDouble();
                 double transferResult = debitCard(selectedAccount).transferFunds(transferAmount, selectedAccount,
@@ -218,9 +248,9 @@ public class Session {
                     auth.createTransactionRecord(this.user, new Transaction(UUID.randomUUID().toString(),
                             selectedAccount.getAccountId(), otherAccount.getAccountId(), transferAmount,
                             selectedAccount.getBalance(), otherAccount.getBalance(),
-                            LocalDateTime.now(), TransactionStatus.COMPLETED, "Transfer from account " +
-                            selectedAccount.getAccountId() + " to account " + otherAccount.getAccountId(),
-                            TransactionType.TRANSFER), selectedAccount, otherAccount);
+                            LocalDateTime.now(), TransactionStatus.COMPLETED, "Transfer from " +
+                            selectedAccount.getAccountId() + " -> " + otherAccount.getAccountId(),
+                            TransactionType.TRANSFER), selectedAccount, null);
                     System.out.println("Transfer successful!");
                 }
             }
@@ -239,11 +269,21 @@ public class Session {
             for (int i = 0; i < accounts.size(); i++) {
                 System.out.println((i + 1) + ". " + accounts.get(i).toString());
             }
-            int accountChoice = input.nextInt();
-            if (accountChoice < 1 || accountChoice > accounts.size()) {
+            String accountChoice = input.nextLine();
+            if (accountChoice.equalsIgnoreCase("B")) {
+                return null;
+            }
+            int accountChoiceInt;
+            try {
+                accountChoiceInt = Integer.parseInt(accountChoice.trim());
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Enter the number of an account or B to go back.");
+                continue;
+            }
+            if (accountChoiceInt < 1 || accountChoiceInt > accounts.size()) {
                 System.out.println("Invalid account selection.");
             } else {
-                return accounts.get(accountChoice - 1);
+                return accounts.get(accountChoiceInt - 1);
             }
         }
     }
@@ -252,8 +292,11 @@ public class Session {
         //TODO:: this is very inefficient, if i have time i will create an indexing class, that will index accounts
         // by accountId for fast retrieval
         while (true) {
-            System.out.println("Enter the account ID of the other account:");
+            System.out.println("Enter the account ID of the other account or B to go back:");
             String otherAccountId = input.nextLine();
+            if (otherAccountId.equalsIgnoreCase("B")) {
+                return null;
+            }
             Account account = auth.getAccountById(otherAccountId);
             if (account == null) {
                 System.out.println("Account not found.");

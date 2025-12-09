@@ -6,6 +6,7 @@ import com.ga.banking.with.java.enums.TransactionStatus;
 import com.ga.banking.with.java.enums.TransactionType;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Transaction {
     private final String transactionId;
@@ -83,4 +84,31 @@ public class Transaction {
     public Double getToAccountPostTransactionBalance() {
         return toAccountPostTransactionBalance;
     }
+
+
+    public void toStatement(Account account) {
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String time = (timestamp != null) ? timestamp.format(fmt) : "";
+        String type = (transactionType != null) ? transactionType.name() : "";
+        String statusStr = (status != null) ? status.name() : "";
+        String amountStr = String.format("%,.2f", amount);
+        String toId = (toAccountId != null) ? toAccountId : "";
+        String fromId = (fromAccountId != null) ? fromAccountId + (toId.isBlank() ? "" : " -->") : "";
+
+        String fromBal = (fromAccountPostTransactionBalance != null) ? String.format("%,.2f",
+                fromAccountPostTransactionBalance) : "";
+        String toBal = (toAccountPostTransactionBalance != null) ? String.format("%,.2f",
+                toAccountPostTransactionBalance) : "";
+
+        String desc = (description != null && !description.isEmpty()) ? description : "";
+
+        // Columns: timestamp(19), type(10), amount(13, right), fromAccount(40), toAccount(40), fromBal(26, right),
+        // status(10), description(rest)
+        String format = "%-19s | %-10s | %13s | %-40s %-40s | %26s | %-10s | %s";
+
+        System.out.println(String.format(format, time, type, amountStr, fromId, toId,
+                account.getAccountId().equals(fromAccountId) ? fromBal : toBal,
+                statusStr, desc).trim());
+    }
+
 }

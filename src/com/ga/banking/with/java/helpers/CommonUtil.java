@@ -16,6 +16,9 @@ public class CommonUtil {
     public static void printSeparatorLine() {
         System.out.println("-".repeat(100));
     }
+    public static void printSeparatorLine(int length) {
+        System.out.println("-".repeat(length));
+    }
 
     public static void createDirectoriesAndWriteFile(String fileContent, String fileName, Path dataPath,
                                                      Path nestedDataPath) throws IOException {

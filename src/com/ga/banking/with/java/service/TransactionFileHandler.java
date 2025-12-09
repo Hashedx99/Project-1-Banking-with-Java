@@ -21,12 +21,11 @@ public class TransactionFileHandler implements FileHandler {
             return null;
         }
         String fileName = userId + ".json";
-        Path dataPath = Paths.get("Data");
-        Path transactionsDataPath = dataPath.resolve("Transactions");
-        Path userTransactionsPath = transactionsDataPath.resolve((String) userId);
-        File[] files = userTransactionsPath.resolve(fileName).toFile().listFiles();
+        Path dataPath = Paths.get("Data", "Transactions");
+        Path userTransactionsPath = dataPath.resolve((String) userId);
+        File[] files = userTransactionsPath.toFile().listFiles();
         if (files == null || files.length == 0) {
-//            System.out.println("No transaction files found for userId: " + userId);
+            System.out.println("No transaction files found for userId: " + userId);
             return null;
         }
         Stream<File> fileStream = Stream.of(files);
