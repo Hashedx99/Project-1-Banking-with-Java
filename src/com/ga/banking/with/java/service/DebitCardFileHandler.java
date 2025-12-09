@@ -1,6 +1,5 @@
-package com.ga.banking.with.java.helpers;
+package com.ga.banking.with.java.service;
 
-import com.ga.banking.with.java.entities.Account;
 import com.ga.banking.with.java.entities.DebitCard;
 import com.ga.banking.with.java.interfaces.FileHandler;
 import tools.jackson.databind.ObjectMapper;
@@ -8,9 +7,6 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import static com.ga.banking.with.java.helpers.CommonUtil.createDirectoriesAndWriteFile;
 

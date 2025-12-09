@@ -1,4 +1,4 @@
-package com.ga.banking.with.java.helpers;
+package com.ga.banking.with.java.service;
 
 import com.ga.banking.with.java.entities.Account;
 import com.ga.banking.with.java.interfaces.FileHandler;

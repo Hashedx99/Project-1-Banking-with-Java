@@ -1,6 +1,6 @@
-package com.ga.banking.with.java.helpers;
+package com.ga.banking.with.java.service;
 
-import com.ga.banking.with.java.entities.Customer;
+import com.ga.banking.with.java.entities.Banker;
 import com.ga.banking.with.java.entities.User;
 import com.ga.banking.with.java.interfaces.FileHandler;
 import tools.jackson.databind.ObjectMapper;
@@ -11,30 +11,32 @@ import java.nio.file.Paths;
 
 import static com.ga.banking.with.java.helpers.CommonUtil.createDirectoriesAndWriteFile;
 
-public class CustomerFileHandler implements FileHandler {
+
+public class BankerFileHandler implements FileHandler {
 
     @Override
     public User readFromFile(Object file) {
         if (!(file instanceof File)) {
-            System.out.println("Invalid file content for customer. Expected a File.");
+            System.out.println("Invalid file content for banker. Expected a File.");
             return null;
         }
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue((File) file, Customer.class);
+        return mapper.readValue((File) file, Banker.class);
     }
 
     @Override
-    public boolean writeToFile(String customerName, String customerId, Object fileContent) {
+    public boolean writeToFile(String bankerName, String bankerId, Object fileContent) {
+
         if (!(fileContent instanceof String)) {
-            System.out.println("Invalid file content for customer. Expected a JSON string.");
+            System.out.println("Invalid file content for banker. Expected a JSON string.");
             return false;
         }
         try {
-            String fileName = "Customer-" + customerName + "-" + customerId + ".json";
+            String fileName = "Banker-" + bankerName + "-" + bankerId + ".json";
             Path dataPath = Paths.get("Data");
-            Path customersPath = dataPath.resolve("Customers");
+            Path bankersPath = dataPath.resolve("Bankers");
 
-            createDirectoriesAndWriteFile((String) fileContent, fileName, dataPath, customersPath);
+            createDirectoriesAndWriteFile((String) fileContent, fileName, dataPath, bankersPath);
         } catch (Exception e) {
             System.out.println("An error occurred while writing to the banker file.");
             System.out.println(e.getMessage());

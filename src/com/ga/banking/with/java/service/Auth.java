@@ -1,4 +1,4 @@
-package com.ga.banking.with.java.features;
+package com.ga.banking.with.java.service;
 
 import com.ga.banking.with.java.entities.Account;
 import com.ga.banking.with.java.entities.Banker;
@@ -12,12 +12,7 @@ import com.ga.banking.with.java.entities.User;
 import com.ga.banking.with.java.enums.AccountType;
 import com.ga.banking.with.java.enums.Status;
 import com.ga.banking.with.java.enums.UserRole;
-import com.ga.banking.with.java.helpers.AccountFileHandler;
-import com.ga.banking.with.java.helpers.BankerFileHandler;
 import com.ga.banking.with.java.helpers.CommonUtil;
-import com.ga.banking.with.java.helpers.CustomerFileHandler;
-import com.ga.banking.with.java.helpers.DebitCardFileHandler;
-import com.ga.banking.with.java.helpers.TransactionFileHandler;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.File;
@@ -32,10 +27,10 @@ import java.util.Objects;
 import java.util.Scanner;
 
 import static com.ga.banking.with.java.helpers.CommonUtil.parseAccountsFromFile;
-import static com.ga.banking.with.java.helpers.PasswordHasher.generateSalt;
-import static com.ga.banking.with.java.helpers.PasswordHasher.getPasswordHash;
-import static com.ga.banking.with.java.helpers.PasswordHasher.isPasswordStrong;
-import static com.ga.banking.with.java.helpers.PasswordHasher.validatePassword;
+import static com.ga.banking.with.java.service.PasswordHasher.generateSalt;
+import static com.ga.banking.with.java.service.PasswordHasher.getPasswordHash;
+import static com.ga.banking.with.java.service.PasswordHasher.isPasswordStrong;
+import static com.ga.banking.with.java.service.PasswordHasher.validatePassword;
 import static java.util.Arrays.stream;
 
 public class Auth {

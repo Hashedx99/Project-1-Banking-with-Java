@@ -2,8 +2,8 @@ package com.ga.banking.with.java;
 
 import com.ga.banking.with.java.entities.User;
 import com.ga.banking.with.java.enums.AccountType;
-import com.ga.banking.with.java.features.Auth;
-import com.ga.banking.with.java.entities.Session;
+import com.ga.banking.with.java.service.Auth;
+import com.ga.banking.with.java.service.Session;
 import com.ga.banking.with.java.helpers.CommonUtil;
 
 public class BankingApp {

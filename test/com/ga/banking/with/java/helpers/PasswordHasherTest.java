@@ -1,5 +1,6 @@
 package com.ga.banking.with.java.helpers;
 
+import com.ga.banking.with.java.service.PasswordHasher;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

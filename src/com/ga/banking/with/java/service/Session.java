@@ -1,7 +1,10 @@
-package com.ga.banking.with.java.entities;
+package com.ga.banking.with.java.service;
 
+import com.ga.banking.with.java.entities.Account;
+import com.ga.banking.with.java.entities.DebitCard;
+import com.ga.banking.with.java.entities.Transaction;
+import com.ga.banking.with.java.entities.User;
 import com.ga.banking.with.java.enums.*;
-import com.ga.banking.with.java.features.Auth;
 
 import java.time.LocalDateTime;
 import java.util.List;
