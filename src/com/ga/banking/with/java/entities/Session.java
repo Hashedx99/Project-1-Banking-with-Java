@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
 
+import static com.ga.banking.with.java.helpers.CommonUtil.waitForUserInput;
+
 public class Session {
     private User user;
     private SessionStatus status;
@@ -71,6 +73,7 @@ public class Session {
         } else {
             System.out.println("User is not authenticated.");
         }
+        waitForUserInput();
     }
 
     private void bankerMenu(Auth auth, Scanner input) {

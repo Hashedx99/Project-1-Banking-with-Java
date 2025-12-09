@@ -32,6 +32,7 @@ public class CommonUtil {
 
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
             writer.write(fileContent);
+            writer.flush();
         }
     }
 
@@ -48,5 +49,14 @@ public class CommonUtil {
             accounts.add(singleAccount);
         }
         return accounts;
+    }
+
+    public static void waitForUserInput() {
+        System.out.println("Press Enter to continue...");
+        try {
+            System.in.read();
+        } catch (IOException e) {
+            // Ignore
+        }
     }
 }
