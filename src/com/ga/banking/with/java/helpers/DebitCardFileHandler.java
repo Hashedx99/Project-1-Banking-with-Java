@@ -17,12 +17,12 @@ import static com.ga.banking.with.java.helpers.CommonUtil.createDirectoriesAndWr
 public class DebitCardFileHandler implements FileHandler {
 
     @Override
-    public DebitCard readFromFile(Object userId) {
-        if (!(userId instanceof String)) {
-            System.out.println("Invalid userId. Expected a String.");
+    public DebitCard readFromFile(Object accountId) {
+        if (!(accountId instanceof String)) {
+            System.out.println("Invalid accountId. Expected a String.");
             return null;
         }
-        String fileName = userId + ".json";
+        String fileName = accountId + ".json";
         Path dataPath = Paths.get("Data");
         Path debitCardsPath = dataPath.resolve("DebitCards");
         File file = debitCardsPath.resolve(fileName).toFile();
@@ -31,13 +31,13 @@ public class DebitCardFileHandler implements FileHandler {
     }
 
     @Override
-    public boolean writeToFile(String name, String userId, Object fileContent) {
+    public boolean writeToFile(String name, String accountId, Object fileContent) {
         if (!(fileContent instanceof String)) {
             System.out.println("Invalid file content for debitCard. Expected a JSON string.");
             return false;
         }
         try {
-            String fileName = userId + ".json";
+            String fileName = accountId + ".json";
             Path dataPath = Paths.get("Data");
             Path debitCardsPath = dataPath.resolve("DebitCards");
 

@@ -1,9 +1,6 @@
 package com.ga.banking.with.java.entities;
 
-import com.ga.banking.with.java.enums.SessionStatus;
-import com.ga.banking.with.java.enums.TransactionStatus;
-import com.ga.banking.with.java.enums.TransactionType;
-import com.ga.banking.with.java.enums.UserRole;
+import com.ga.banking.with.java.enums.*;
 import com.ga.banking.with.java.features.Auth;
 
 import java.time.LocalDateTime;
@@ -16,7 +13,8 @@ public class Session {
     private SessionStatus status;
     private UserRole role;
     private List<Account> accounts;
-    private DebitCard debitCard;
+    private DebitCard savingsDebitCard;
+    private DebitCard checkingDebitCard;
     private List<Transaction> transactions;
 
     public Session() {
@@ -44,13 +42,15 @@ public class Session {
         return this.status == SessionStatus.Unauthenticated;
     }
 
-    public void initializeSession(User user, List<Account> accounts, DebitCard debitCard,
+    public void initializeSession(User user, List<Account> accounts, DebitCard savingsDebitCard,
+                                  DebitCard checkingDebitCard,
                                   List<Transaction> transactions) {
         this.user = user;
         this.status = SessionStatus.Active;
         this.role = user.getRole();
         this.accounts = accounts;
-        this.debitCard = debitCard;
+        this.savingsDebitCard = savingsDebitCard;
+        this.checkingDebitCard = checkingDebitCard;
         this.transactions = transactions;
     }
 
@@ -133,9 +133,11 @@ public class Session {
             case "2" -> {
                 System.out.println("Select an account to withdraw from:");
                 Account selectedAccount = getAccount(input);
+                DebitCard cardToBeUsed = selectedAccount.getAccountType() == AccountType.Savings ?
+                        this.savingsDebitCard : this.checkingDebitCard;
                 System.out.println("Enter amount to withdraw:");
                 double withdrawAmount = input.nextDouble();
-                double withdrawResult = this.debitCard.withdrawFunds(withdrawAmount, selectedAccount);
+                double withdrawResult = cardToBeUsed.withdrawFunds(withdrawAmount, selectedAccount);
                 if (withdrawResult != -1) {
                     auth.createTransactionRecord(this.user, new Transaction(UUID.randomUUID().toString(),
                             selectedAccount.getAccountId(), null, withdrawAmount, LocalDateTime.now(),
@@ -148,9 +150,11 @@ public class Session {
             case "3" -> {
                 System.out.println("Select an account to deposit to:");
                 Account selectedAccount = getAccount(input);
+                DebitCard cardToBeUsed = selectedAccount.getAccountType() == AccountType.Savings ?
+                        this.savingsDebitCard : this.checkingDebitCard;
                 System.out.println("Enter amount to deposit:");
                 double depositAmount = input.nextDouble();
-                double depositResult = this.debitCard.depositFunds(depositAmount, selectedAccount, true);
+                double depositResult = cardToBeUsed.depositFunds(depositAmount, selectedAccount, true);
                 if (depositResult != -1) {
                     auth.createTransactionRecord(this.user, new Transaction(UUID.randomUUID().toString(),
                             null, selectedAccount.getAccountId(), depositAmount, LocalDateTime.now(),
@@ -162,9 +166,11 @@ public class Session {
             case "4" -> {
                 System.out.println("Select an account to deposit to:");
                 Account selectedAccount = getOtherAccount(input, auth);
+                DebitCard cardToBeUsed = selectedAccount.getAccountType() == AccountType.Savings ?
+                        this.savingsDebitCard : this.checkingDebitCard;
                 System.out.println("Enter amount to deposit:");
                 double depositAmount = input.nextDouble();
-                double depositResult = this.debitCard.depositFunds(depositAmount, selectedAccount, false);
+                double depositResult = cardToBeUsed.depositFunds(depositAmount, selectedAccount, false);
                 if (depositResult != -1) {
                     auth.createTransactionRecord(this.user, new Transaction(UUID.randomUUID().toString(),
                             null, selectedAccount.getAccountId(), depositAmount, LocalDateTime.now(),
@@ -176,11 +182,13 @@ public class Session {
             case "5" -> {
                 System.out.println("Select an account to transfer from:");
                 Account selectedAccount = getAccount(input);
+                DebitCard cardToBeUsed = selectedAccount.getAccountType() == AccountType.Savings ?
+                        this.savingsDebitCard : this.checkingDebitCard;
                 System.out.println("Select an account to transfer to:");
                 Account otherAccount = getAccount(input);
                 System.out.println("Enter amount to transfer:");
                 double transferAmount = input.nextDouble();
-                double transferResult = this.debitCard.transferFunds(transferAmount, selectedAccount, otherAccount,
+                double transferResult = cardToBeUsed.transferFunds(transferAmount, selectedAccount, otherAccount,
                         true);
                 if (transferResult != -1) {
                     auth.createTransactionRecord(this.user, new Transaction(UUID.randomUUID().toString(),
@@ -194,11 +202,13 @@ public class Session {
             case "6" -> {
                 System.out.println("Select an account to transfer from:");
                 Account selectedAccount = getAccount(input);
+                DebitCard cardToBeUsed = selectedAccount.getAccountType() == AccountType.Savings ?
+                        this.savingsDebitCard : this.checkingDebitCard;
                 System.out.println("Select an account to transfer to:");
                 Account otherAccount = getOtherAccount(input, auth);
                 System.out.println("Enter amount to transfer:");
                 double transferAmount = input.nextDouble();
-                double transferResult = this.debitCard.transferFunds(transferAmount, selectedAccount, otherAccount,
+                double transferResult = cardToBeUsed.transferFunds(transferAmount, selectedAccount, otherAccount,
                         false);
                 if (transferResult != -1) {
                     auth.createTransactionRecord(this.user, new Transaction(UUID.randomUUID().toString(),

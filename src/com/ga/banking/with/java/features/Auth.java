@@ -355,42 +355,45 @@ public class Auth {
         System.out.println("3. Both Savings and Checking Accounts");
         String accountTypeChoice = input.nextLine().trim();
         ObjectMapper objectMapper = new ObjectMapper();
-        createBankingAccountsForCustomer(accountTypeChoice, customer).forEach(account ->
+        List<Account> accounts = createBankingAccountsForCustomer(accountTypeChoice, customer);
+        accounts.forEach(account ->
                 accountFileHandler.writeToFile(null, customer.getUserId(), account));
         customerFileHandler.writeToFile(customer.getUsername(), customer.getUserId(),
                 objectMapper.writeValueAsString(customer));
-        System.out.println("Please issue a debit card for the customer.");
+        accounts.forEach(account -> issueCardForAccount(account, objectMapper));
+        System.out.println("Customer account created successfully for " + customer.getFirstName() + " " + customer.getLastName() + "!");
+        System.out.println("Provide the following temporary password to the customer for their first login: " + password);
+        return customer;
+    }
+
+    private static void issueCardForAccount(Account account, ObjectMapper objectMapper) {
+        System.out.println("Please issue a debit card for the " + account.getAccountType() + "account.");
         System.out.println("1. MasterCard");
         System.out.println("2. MasterCard Titanium");
         System.out.println("3. MasterCard Platinum");
         String cardTypeChoice = input.nextLine().trim();
         switch (cardTypeChoice) {
             case "1" -> {
-                MasterCard debitCard = new MasterCard(customer.getUserId());
-                debitCardFileHandler.writeToFile(null, customer.getUserId(),
+                MasterCard debitCard = new MasterCard(account.getAccountId());
+                debitCardFileHandler.writeToFile(null, account.getAccountId(),
                         objectMapper.writeValueAsString(debitCard));
-                System.out.println("MasterCard debit card issued for customer " + customer.getFirstName() + " " +
-                        customer.getLastName());
+                System.out.println("MasterCard debit card issued for the " + account.getAccountType() + "account.");
             }
             case "2" -> {
-                MasterCardTitanium debitCard = new MasterCardTitanium(customer.getUserId());
-                debitCardFileHandler.writeToFile(null, customer.getUserId(),
+                MasterCardTitanium debitCard = new MasterCardTitanium(account.getAccountId());
+                debitCardFileHandler.writeToFile(null, account.getAccountId(),
                         objectMapper.writeValueAsString(debitCard));
-                System.out.println("MasterCard Titanium debit card issued for customer " + customer.getFirstName() +
-                        " " + customer.getLastName());
+                System.out.println("MasterCard Titanium debit card issued for customer the " + account.getAccountType() + "account.");
             }
             case "3" -> {
-                MasterCardPlatinum debitCard = new MasterCardPlatinum(customer.getUserId());
-                debitCardFileHandler.writeToFile(null, customer.getUserId(),
+                MasterCardPlatinum debitCard = new MasterCardPlatinum(account.getAccountId());
+                debitCardFileHandler.writeToFile(null, account.getAccountId(),
                         objectMapper.writeValueAsString(debitCard));
-                System.out.println("MasterCard Platinum debit card issued for customer " + customer.getFirstName() +
-                        " " + customer.getLastName());
+                System.out.println("MasterCard Platinum debit card issued for the " + account.getAccountType() +
+                        "account.");
             }
             default -> System.out.println("Invalid card type selected. No debit card issued.");
         }
-        System.out.println("Customer account created successfully for " + customer.getFirstName() + " " + customer.getLastName() + "!");
-        System.out.println("Provide the following temporary password to the customer for their first login: " + password);
-        return customer;
     }
 
     public List<Account> loadUserAccounts(User user) {
@@ -404,11 +407,16 @@ public class Auth {
         return accountFileHandler.readFromFile(customerId);
     }
 
-    public DebitCard loadUserDebitCard(User user) {
+    public DebitCard loadUserDebitCard(User user, AccountType accountType) {
         if (user.getRole() == UserRole.Banker) {
             return null;
         }
-        return debitCardFileHandler.readFromFile(user.getUserId());
+        Account userAccount =
+                loadUserAccounts(user).stream().filter(account -> account.getAccountType() == accountType).findFirst().orElse(null);
+        if (userAccount == null) {
+            return null;
+        }
+        return debitCardFileHandler.readFromFile(userAccount.getAccountId());
     }
 
     public Account getAccountById(String accountId) {
