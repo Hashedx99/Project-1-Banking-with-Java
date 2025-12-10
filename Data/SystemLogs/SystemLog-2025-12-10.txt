@@ -1,0 +1,16 @@
+Failed login attempt for Customer: hamza.at: 2025-12-10_15-41-04Total failed attempts: 5Failed login attempt for Customer: hamza.at: 2025-12-10_15-56-21Total failed attempts: 1Failed login attempt for Customer: hamza.at: 2025-12-10_15-56-39Total failed attempts: 2Failed login attempt for Customer: hamza.at: 2025-12-10_15-57-35Total failed attempts: 3
+Failed login attempt for Customer: hamza.at: 2025-12-10_15-57-59Total failed attempts: 4
+Failed login attempt for Customer: hamza.at: 2025-12-10 15:58:49Total failed attempts: 5
+Failed login attempt for Customer: hamza :: at: 2025-12-10 15:59:40 Total failed attempts: 6
+Failed login attempt for Customer: hamza :: at: 2025-12-10 16:20:09 Total failed attempts: 1
+Failed login attempt for Customer: hamza :: at: 2025-12-10 16:21:01 Total failed attempts: 1
+Failed login attempt for Customer: hamza :: at: 2025-12-10 16:36:17 Total failed attempts: 2
+Failed login attempt for Customer: hamza :: at: 2025-12-10 16:38:23 Total failed attempts: 3
+Failed login attempt for Customer: hamza :: at: 2025-12-10 16:47:24 Total failed attempts: 4
+Failed login attempt for Customer: hamza :: at: 2025-12-10 16:49:56 Total failed attempts: 5
+Failed login attempt for Customer: hamza :: at: 2025-12-10 16:50:27 Total failed attempts: 6
+Failed login attempt for Customer: hamza :: at: 2025-12-10 16:58:53 Total failed attempts: 1
+Failed login attempt for Customer: hamza :: at: 2025-12-10 17:10:10 Total failed attempts: 2
+Failed login attempt for Customer: hamza :: at: 2025-12-10 17:16:25 Total failed attempts: 3
+Failed login attempt for Customer: hamza :: at: 2025-12-10 17:18:49 Total failed attempts: 3
+Failed login attempt for Customer: hamza :: at: 2025-12-10 17:26:17 Total failed attempts: 4

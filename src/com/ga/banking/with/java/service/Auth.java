@@ -13,6 +13,7 @@ import com.ga.banking.with.java.enums.AccountType;
 import com.ga.banking.with.java.enums.Status;
 import com.ga.banking.with.java.enums.UserRole;
 import com.ga.banking.with.java.helpers.CommonUtil;
+import com.ga.banking.with.java.interfaces.FileHandler;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.File;
@@ -20,6 +21,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Comparator;
@@ -41,6 +44,7 @@ public class Auth {
     private static final AccountFileHandler accountFileHandler = new AccountFileHandler();
     private static final DebitCardFileHandler debitCardFileHandler = new DebitCardFileHandler();
     private static final TransactionFileHandler transactionFileHandler = new TransactionFileHandler();
+    private static final SystemFileHandler systemFileHandler = new SystemFileHandler();
     private static final Scanner input = new Scanner(System.in);
     private static final SecureRandom secureRandom = new SecureRandom();
 
@@ -85,20 +89,21 @@ public class Auth {
         Customer customer =
                 (Customer) customerFileList.stream().filter(file -> {
                             Customer tmpCustomer = (Customer) customerFileHandler.readFromFile(file);
-                            return validatePassword(password, tmpCustomer.getSalt(),
-                                    tmpCustomer.getPasswordHash());
+                            return validatePasswordAndCheckLockStatus(username, password, tmpCustomer,
+                                    customerFileHandler);
                         }).findFirst().map(customerFileHandler::readFromFile)
                         .orElse(null);
-
+        if (customer != null) {
+            return customer;
+        }
         List<File> fileList = validatePathAndFiles(bankersPath, username, UserRole.Banker);
         Banker banker =
                 (Banker) fileList.stream().filter(file -> {
                             Banker tmpBanker = (Banker) bankerFileHandler.readFromFile(file);
-                            return validatePassword(password, tmpBanker.getSalt(),
-                                    tmpBanker.getPasswordHash());
+                            return validatePasswordAndCheckLockStatus(username, password, tmpBanker, bankerFileHandler);
                         }).findFirst().map(bankerFileHandler::readFromFile)
                         .orElse(null);
-        return customer != null ? customer : banker;
+        return banker;
     }
 
     private static User bankerFlowOnlyIfNoCustomers(Path customersPath, Path bankersPath, String username,
@@ -111,10 +116,11 @@ public class Auth {
             while (true) {
                 List<File> fileList = validatePathAndFiles(bankersPath, username, UserRole.Banker);
                 String finalPassword = password;
+                String finalUsername = username;
                 User user = fileList.stream().filter(file -> {
                             Banker tmpBanker = (Banker) bankerFileHandler.readFromFile(file);
-                            return validatePassword(finalPassword, tmpBanker.getSalt(),
-                                    tmpBanker.getPasswordHash());
+                            return validatePasswordAndCheckLockStatus(finalUsername, finalPassword, tmpBanker,
+                                    bankerFileHandler);
                         }).findFirst().map(bankerFileHandler::readFromFile)
                         .orElse(null);
                 if (user != null) {
@@ -131,6 +137,31 @@ public class Auth {
             }
         }
         return null;
+    }
+
+    private static boolean validatePasswordAndCheckLockStatus(String username, String password, User user,
+                                                              FileHandler fileHandler) {
+        if (validatePassword(password, user.getSalt(),
+                user.getPasswordHash())) {
+//            if (user.getStatus() == Status.Locked) {
+//                System.out.println(user);
+//                if (user.getLockUntil() != null && LocalDateTime.now().isAfter(user.getLockUntil())) {
+//                    user.resetLock();
+//                    fileHandler.writeToFile(username, user.getUserId(),
+//                            new ObjectMapper().writeValueAsString(user));
+//                    return true;
+//                } else {
+//                    System.out.println("Account is locked until " + user.getLockUntil().format(DateTimeFormatter
+//                    .ofPattern("yyyy-MM-dd HH:mm:ss")));
+//                    return false;
+//                }
+//            }
+//            else {
+            return true;
+//            }
+        } else {
+            return false;
+        }
     }
 
     private static List<File> validatePathAndFiles(Path path, String username, UserRole role) {
@@ -546,6 +577,26 @@ public class Auth {
         header(account);
         filteredAndSortedTransactions.forEach(transaction -> transaction.toStatement(account));
     }
+
+    public void getAccountTransactions(User user, Account account, LocalDateTime fromDate, LocalDateTime toDate) {
+        List<Transaction> unfilteredTransactions = loadUserTransactions(user);
+        List<Transaction> filteredAndSortedTransactions =
+                unfilteredTransactions.stream().filter(transaction -> account.getAccountId().equals(transaction.getToAccountId()) || account.getAccountId().equals(transaction.getFromAccountId())).sorted(Comparator.comparing(Transaction::getTimestamp)
+                ).toList();
+        if (filteredAndSortedTransactions.isEmpty()) {
+            System.out.println("No Transactions for account" + account);
+            return;
+        }
+        List<Transaction> scopedTransactions =
+                filteredAndSortedTransactions.stream().filter(transaction -> transaction.getTimestamp().isAfter(fromDate) && (transaction.getTimestamp().isBefore(toDate) || transaction.getTimestamp().isEqual(toDate))).toList();
+        if (scopedTransactions.isEmpty()) {
+            System.out.println("No Transactions for account" + account + " in the specified date range.");
+            return;
+        }
+        header(account);
+        scopedTransactions.forEach(transaction -> transaction.toStatement(account));
+    }
+
 
     private void header(Account account) {
         String availableBal;

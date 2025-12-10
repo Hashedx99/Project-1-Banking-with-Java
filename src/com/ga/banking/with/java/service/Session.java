@@ -143,8 +143,47 @@ public class Session {
                     System.out.println("Operation cancelled, returning to menu.");
                     return;
                 }
-
-                auth.getAccountTransactions(this.user, selectedAccount);
+                System.out.println("Select date range for transactions or B to go back:");
+                System.out.println("1. Last 7 days");
+                System.out.println("2. Last 30 days");
+                System.out.println("3. Last 90 days");
+                System.out.println("4. Custom range");
+                System.out.println("5. All time");
+                String dateRangeChoice = input.nextLine();
+                switch (dateRangeChoice) {
+                    case "B", "b" -> {
+                        System.out.println("Operation cancelled, returning to menu.");
+                        return;
+                    }
+                    case "1" -> auth.getAccountTransactions(this.user, selectedAccount, LocalDateTime.now().minusDays(7),
+                            LocalDateTime.now());
+                    case "2" -> auth.getAccountTransactions(this.user, selectedAccount, LocalDateTime.now().minusDays(30),
+                            LocalDateTime.now());
+                    case "3" -> auth.getAccountTransactions(this.user, selectedAccount, LocalDateTime.now().minusDays(90),
+                            LocalDateTime.now());
+                    case "4" -> {
+                        while (true) {
+                            System.out.println("Enter start date (YYYY-MM-DD):");
+                            String startDateStr = input.nextLine();
+                            System.out.println("Enter end date (YYYY-MM-DD):");
+                            String endDateStr = input.nextLine();
+                            try {
+                                LocalDateTime startDate = LocalDateTime.parse(startDateStr + "T00:00:00");
+                                LocalDateTime endDate = LocalDateTime.parse(endDateStr + "T23:59:59");
+                                auth.getAccountTransactions(this.user, selectedAccount, startDate, endDate);
+                            } catch (Exception e) {
+                                System.out.println("Invalid date format. Please use YYYY-MM-DD.");
+                                continue;
+                            }
+                            break;
+                        }
+                    }
+                    case "5" -> auth.getAccountTransactions(this.user, selectedAccount);
+                    default -> {
+                        System.out.println("Invalid option. Returning to menu.");
+                        return;
+                    }
+                }
             }
             case "3" -> {
                 System.out.println("Select an account to withdraw from or B to go back:");

@@ -106,14 +106,6 @@ public class DebitCard {
         return false;
     }
 
-    private boolean isOverdraft(Account account, double amount) {
-        if (amount > account.getBalance() && account.getOverdraftCount() < 2) {
-            System.out.println("Insufficient funds in the account.");
-            return true;
-        }
-        return false;
-    }
-
     public String getAccountNumber() {
         return accountNumber;
     }

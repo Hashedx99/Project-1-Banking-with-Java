@@ -4,6 +4,7 @@ import com.ga.banking.with.java.enums.Status;
 import com.ga.banking.with.java.enums.UserRole;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class User {
@@ -15,7 +16,7 @@ public class User {
     private String email;
     private String phoneNumber;
     private int failedAttempts;
-    private LocalDate lockUntil;
+    private LocalDateTime lockUntil;
     private LocalDate createdAt;
     private UserRole role;
     private Status status;
@@ -103,11 +104,11 @@ public class User {
         this.failedAttempts = failedAttempts;
     }
 
-    public LocalDate getLockUntil() {
+    public LocalDateTime getLockUntil() {
         return lockUntil;
     }
 
-    public void setLockUntil(LocalDate lockUntil) {
+    public void setLockUntil(LocalDateTime lockUntil) {
         this.lockUntil = lockUntil;
     }
 
@@ -141,6 +142,21 @@ public class User {
 
     public void setSalt(String salt) {
         this.salt = salt;
+    }
+
+    public void resetLock() {
+        this.setFailedAttempts(0);
+        this.setLockUntil(null);
+        this.setStatus(Status.Active);
+    }
+
+    public void lockAccount() {
+        this.setStatus(Status.Locked);
+        this.setLockUntil(LocalDateTime.now().plusMinutes(1));
+    }
+
+    public void incrementFailedAttempts() {
+        this.failedAttempts += 1;
     }
 
     public String toString() {

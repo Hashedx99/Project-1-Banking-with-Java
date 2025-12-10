@@ -53,7 +53,7 @@ public class AccountFileHandler implements FileHandler {
             }
             accounts.add((Account) pAccount);
 
-            createDirectoriesAndWriteFile(mapper.writeValueAsString(accounts), fileName, dataPath, accountsPath);
+            createDirectoriesAndWriteFile(mapper.writeValueAsString(accounts), fileName, dataPath, accountsPath, false);
         } catch (Exception e) {
             System.out.println("An error occurred while writing to the accounts file.");
             System.out.println(e.getMessage());

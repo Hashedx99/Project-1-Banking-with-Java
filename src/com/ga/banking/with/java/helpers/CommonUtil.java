@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +22,7 @@ public class CommonUtil {
     }
 
     public static void createDirectoriesAndWriteFile(String fileContent, String fileName, Path dataPath,
-                                                     Path nestedDataPath) throws IOException {
+                                                     Path nestedDataPath, boolean shouldAppend) throws IOException {
         if (Files.notExists(dataPath)) {
             Files.createDirectory(dataPath);
         }
@@ -33,7 +34,7 @@ public class CommonUtil {
         Path path = nestedDataPath == null ? dataPath.resolve(fileName) : nestedDataPath.resolve(fileName);
 
 
-        try (BufferedWriter writer = Files.newBufferedWriter(path)) {
+        try (BufferedWriter writer = Files.newBufferedWriter(path, shouldAppend ? StandardOpenOption.APPEND : StandardOpenOption.CREATE)) {
             writer.write(fileContent);
             writer.flush();
         }
