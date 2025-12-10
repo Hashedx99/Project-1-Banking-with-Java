@@ -84,8 +84,6 @@ public class Session {
         System.out.println("Choose an option:");
         System.out.println("1. Create Customer Account");
         System.out.println("2. View Customer Accounts");
-        System.out.println("3. Deactivate Customer Account");
-        System.out.println("4. Activate Customer Account");
         System.out.println("C. Create Banker Account");
         System.out.println("R. Reset Banker Password");
         System.out.println("Q. Quit");
@@ -104,6 +102,7 @@ public class Session {
                     }
                 }
             }
+            case "C", "c" -> auth.createUserForBanker();
             case "R", "r" -> auth.resetPassword(this.user);
             case "Q", "q" -> {
                 System.out.println("Exiting Banker Menu.");

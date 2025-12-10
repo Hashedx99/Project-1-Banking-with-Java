@@ -351,7 +351,7 @@ public class Auth {
 
     }
 
-    public Customer createUserForCustomer() {
+    public void createUserForCustomer() {
         System.out.println("Customer username: ");
         String username = input.nextLine();
 
@@ -405,7 +405,50 @@ public class Auth {
         accounts.forEach(Auth::createDebitCardsForCustomerAccount);
         System.out.println("Customer account created successfully for " + customer.getFirstName() + " " + customer.getLastName() + "!");
         System.out.println("Provide the following temporary password to the customer for their first login: " + password);
-        return customer;
+    }
+
+    public void createUserForBanker() {
+        System.out.println("Banker username: ");
+        String username = input.nextLine();
+        Path dataPath = Paths.get("Data");
+        Path bankersPath = dataPath.resolve("Bankers");
+        while (true) {
+            String finalUsername = username;
+            File[] existingFiles =
+                    bankersPath.toFile().listFiles(file -> file.getName().startsWith("Banker-" + finalUsername +
+                            "-"));
+            if (existingFiles != null && existingFiles.length > 0) {
+                System.out.println("Error: A banker with the username '" + username + "' already exists. Please try" +
+                        " again.");
+                System.out.println("Banker username: ");
+                username = input.nextLine();
+            } else {
+                break;
+            }
+        }
+        String salt = generateSalt();
+        CommonUtil.printSeparatorLine();
+        System.out.println("Banker First Name: ");
+        String firstName = input.nextLine();
+        CommonUtil.printSeparatorLine();
+        System.out.println("Banker Last Name: ");
+        String lastName = input.nextLine();
+        CommonUtil.printSeparatorLine();
+        System.out.println("Banker email: ");
+        String email = input.nextLine();
+        CommonUtil.printSeparatorLine();
+        System.out.println("Banker phone number: ");
+        String phoneNumber = input.nextLine();
+        byte[] randomPass = new byte[8];
+        secureRandom.nextBytes(randomPass);
+        String password = Base64.getEncoder().encodeToString(randomPass);
+        Banker banker = new Banker(firstName, lastName, username, password, salt, email, phoneNumber);
+        banker.setStatus(Status.FirstLogin);
+        ObjectMapper objectMapper = new ObjectMapper();
+        bankerFileHandler.writeToFile(banker.getUsername(), banker.getUserId(),
+                objectMapper.writeValueAsString(banker));
+        System.out.println("Banker account created successfully for " + banker.getFirstName() + " " + banker.getLastName() + "!");
+        System.out.println("Provide the following temporary password to the Banker for their first login: " + password);
     }
 
     public List<Account> loadUserAccounts(User user) {
