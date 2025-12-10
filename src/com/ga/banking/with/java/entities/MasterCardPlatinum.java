@@ -11,9 +11,9 @@ public class MasterCardPlatinum extends DebitCard {
     public MasterCardPlatinum(String accountNumber) {
         super(accountNumber, CardType.MasterCardPlatinum, 20000,
                 80000, 40000,
-                200000, 100000, 20000,
-                80000, 40000,
-                200000, 100000, LocalDate.now());
+                200000, 100000, 0,
+                0, 0,
+                0, 0, LocalDate.now());
     }
 
     @JsonCreator

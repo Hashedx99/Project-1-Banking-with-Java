@@ -10,9 +10,9 @@ public class MasterCardTitanium extends DebitCard {
     public MasterCardTitanium(String accountNumber) {
         super(accountNumber, CardType.MasterCardTitanium, 10000,
                 40000, 20000,
-                200000, 100000, 10000,
-                40000, 20000,
-                200000, 100000, LocalDate.now());
+                200000, 100000, 0,
+                0, 0,
+                0, 0, LocalDate.now());
     }
 
     @JsonCreator

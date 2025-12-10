@@ -11,9 +11,9 @@ public class MasterCard extends DebitCard {
     public MasterCard(String accountNumber) {
         super(accountNumber, CardType.MasterCard, 5000,
                 20000, 10000,
-                200000, 100000, 5000,
-                20000, 10000,
-                200000, 100000, LocalDate.now());
+                200000, 100000, 0,
+                0, 0,
+                0, 0, LocalDate.now());
     }
 
     @JsonCreator

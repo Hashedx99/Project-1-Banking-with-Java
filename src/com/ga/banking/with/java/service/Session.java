@@ -104,7 +104,7 @@ public class Session {
                     }
                 }
             }
-            case "B", "b" -> auth.resetPassword(this.user);
+            case "R", "r" -> auth.resetPassword(this.user);
             case "Q", "q" -> {
                 System.out.println("Exiting Banker Menu.");
                 this.terminateSession();
@@ -152,6 +152,11 @@ public class Session {
                 Account selectedAccount = getAccount(input);
                 if (selectedAccount == null) {
                     System.out.println("Operation cancelled, returning to menu.");
+                    return;
+                }
+                if (selectedAccount.getStatus().equals(AccountStatus.Frozen)) {
+                    System.out.println("Selected account is frozen. Cannot withdraw funds.");
+                    System.out.println("Please clear any overdrafts to unfreeze the account.");
                     return;
                 }
                 System.out.println("Enter amount to withdraw:");
@@ -214,6 +219,11 @@ public class Session {
                     System.out.println("Operation cancelled, returning to menu.");
                     return;
                 }
+                if (selectedAccount.getStatus().equals(AccountStatus.Frozen)) {
+                    System.out.println("Selected account is frozen. Cannot withdraw funds.");
+                    System.out.println("Please clear any overdrafts to unfreeze the account.");
+                    return;
+                }
                 System.out.println("Enter amount to transfer:");
                 double transferAmount = input.nextDouble();
                 double transferResult = debitCard(selectedAccount).transferFunds(transferAmount, selectedAccount,
@@ -237,6 +247,11 @@ public class Session {
                 Account otherAccount = getOtherAccount(input, auth);
                 if (otherAccount == null || selectedAccount == null) {
                     System.out.println("Operation cancelled, returning to menu.");
+                    return;
+                }
+                if (selectedAccount.getStatus().equals(AccountStatus.Frozen)) {
+                    System.out.println("Selected account is frozen. Cannot withdraw funds.");
+                    System.out.println("Please clear any overdrafts to unfreeze the account.");
                     return;
                 }
                 System.out.println("Enter amount to transfer:");

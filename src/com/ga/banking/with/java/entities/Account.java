@@ -77,13 +77,18 @@ public class Account {
         return status;
     }
 
-    public double deposit(double amount) {
+    public void deposit(double amount) {
         if (amount <= 0) {
             System.out.println("Deposit amount must be positive.");
-            return balance;
+            return;
         }
+        boolean wasBalanceLessThanZero = balance < 0;
         balance += amount;
-        return balance;
+        if (wasBalanceLessThanZero && balance > 0) {
+            this.overdraftCount = 0;
+            this.status = AccountStatus.Active;
+            System.out.println("Account has been unfrozen as the balance is now positive.");
+        }
     }
 
     public double withdraw(double amount) {
@@ -92,30 +97,31 @@ public class Account {
             return balance;
         }
         if (balance < 0) {
-            if (amount > 100) {
-                System.out.println("Account is overdrawn. Cannot withdraw more than $100 while balance is negative.");
-                return balance;
-            }
-            handleOverdraft(amount);
-            return balance;
+            return handleOverdraft(amount);
         }
         if (amount > balance) {
-            handleOverdraft(amount);
-            return balance;
+            return handleOverdraft(amount);
         }
         balance -= amount;
         return balance;
     }
 
-    private void handleOverdraft(double amount) {
+    private double handleOverdraft(double amount) {
+        double overdraw = amount - balance;
+        if (overdraw > 100) {
+            System.out.println("Account is overdrawn. Cannot withdraw more than $100 while balance is negative.");
+            return balance;
+        }
         this.overdraftCount++;
         balance -= amount;
+        balance -= 35;
         System.out.println("Overdrafted: " + amount);
         if (overdraftCount == 2) {
             System.out.println("Warning: You have reached the maximum number of overdrafts allowed.");
             System.out.println("your account is now frozen until you pay off the negative balance.");
             this.status = AccountStatus.Frozen;
         }
+        return balance;
     }
 
     @Override

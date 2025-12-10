@@ -75,7 +75,8 @@ public class DebitCard {
                 "Transfer")) {
             return -1;
         }
-        toAccount.deposit(fromAccount.withdraw(amount));
+        fromAccount.withdraw(amount);
+        toAccount.deposit(amount);
         System.out.println("Transferred: " + amount);
         return amount;
     }
@@ -141,6 +142,29 @@ public class DebitCard {
         return depositLimitOtherAccount;
     }
 
+    public double getDailyTransferredOwnAmount() {
+        return dailyTransferredOwnAmount;
+    }
+
+    public double getDailyTransferredOtherAmount() {
+        return dailyTransferredOtherAmount;
+    }
+
+    public double getDailyDepositedOwnAmount() {
+        return dailyDepositedOwnAmount;
+    }
+
+    public double getDailyDepositedOtherAmount() {
+        return dailyDepositedOtherAmount;
+    }
+
+    public LocalDate getDailySpentDate() {
+        return dailySpentDate;
+    }
+
+    public double getDailyWithdrawnAmount() {
+        return dailyWithdrawnAmount;
+    }
 
     private void resetDailyLimitsIfNeeded() {
         if (dailySpentDate == null || !dailySpentDate.equals(LocalDate.now())) {
