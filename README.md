@@ -162,13 +162,14 @@ All read and write operations follow defensive patterns:
 ## Pride Points
 
 - Thoughtful file design inspired by NoSQL principles
-- authentication with salted password hashing
+- Authentication with salted password hashing
 - Clear separation of concerns with FileHandler interfaces
 - Effective use of OOP principles like inheritance and polymorphism
 - Comprehensive unit tests covering core functionality
 - User-friendly console interface
 - Transactions are performed using a proper sequence of objects: debit card initiates transaction, account class 
   handles it
+- Detailed planning and user story tracking via Trello
 
 ---
 
