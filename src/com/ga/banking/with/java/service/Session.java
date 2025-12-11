@@ -176,27 +176,40 @@ public class Session {
                     return;
                 }
                 System.out.println("Select date range for transactions or B to go back:");
-                System.out.println("1. Last 7 days");
-                System.out.println("2. Last 30 days");
-                System.out.println("3. Last 90 days");
-                System.out.println("4. Custom range");
-                System.out.println("5. All time");
+                System.out.println("1. Today");
+                System.out.println("2. Yesterday");
+                System.out.println("3. Last 7 days");
+                System.out.println("4. Last 30 days");
+                System.out.println("5. Last 90 days");
+                System.out.println("6. Custom range");
+                System.out.println("7. All time");
                 String dateRangeChoice = input.nextLine();
                 switch (dateRangeChoice) {
                     case "B", "b" -> {
                         System.out.println("Operation cancelled, returning to menu.");
                         return;
                     }
-                    case "1" ->
+                    case "1" -> {
+                        auth.getAccountTransactions(this.user, selectedAccount,
+                                LocalDateTime.now().toLocalDate().atStartOfDay(),
+                                LocalDateTime.now());
+                    }
+
+                    case "2" -> {
+                        auth.getAccountTransactions(this.user, selectedAccount,
+                                LocalDateTime.now().minusDays(1).toLocalDate().atStartOfDay(),
+                                LocalDateTime.now().toLocalDate().atStartOfDay());
+                    }
+                    case "3" ->
                             auth.getAccountTransactions(this.user, selectedAccount, LocalDateTime.now().minusDays(7),
                                     LocalDateTime.now());
-                    case "2" ->
+                    case "4" ->
                             auth.getAccountTransactions(this.user, selectedAccount, LocalDateTime.now().minusDays(30),
                                     LocalDateTime.now());
-                    case "3" ->
+                    case "5" ->
                             auth.getAccountTransactions(this.user, selectedAccount, LocalDateTime.now().minusDays(90),
                                     LocalDateTime.now());
-                    case "4" -> {
+                    case "6" -> {
                         while (true) {
                             System.out.println("Enter start date (YYYY-MM-DD):");
                             String startDateStr = input.nextLine();
@@ -213,7 +226,7 @@ public class Session {
                             break;
                         }
                     }
-                    case "5" -> auth.getAccountTransactions(this.user, selectedAccount);
+                    case "7" -> auth.getAccountTransactions(this.user, selectedAccount);
                     default -> {
                         System.out.println("Invalid option. Returning to menu.");
                         return;

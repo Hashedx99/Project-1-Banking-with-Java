@@ -275,11 +275,12 @@ public class Auth {
                 unfilteredTransactions.stream().filter(transaction -> account.getAccountId().equals(transaction.getToAccountId()) || account.getAccountId().equals(transaction.getFromAccountId())).sorted(Comparator.comparing(Transaction::getTimestamp)
                 ).toList();
         if (filteredAndSortedTransactions.isEmpty()) {
-            System.out.println("No Transactions for account" + account);
+            System.out.println("No Transactions for account" + account.getAccountId());
             return;
         }
         header(account);
         filteredAndSortedTransactions.forEach(transaction -> transaction.toStatement(account));
+        printSeparatorLine(267);
     }
 
     public void getAccountTransactions(User user, Account account, LocalDateTime fromDate, LocalDateTime toDate) {
@@ -288,17 +289,18 @@ public class Auth {
                 unfilteredTransactions.stream().filter(transaction -> account.getAccountId().equals(transaction.getToAccountId()) || account.getAccountId().equals(transaction.getFromAccountId())).sorted(Comparator.comparing(Transaction::getTimestamp)
                 ).toList();
         if (filteredAndSortedTransactions.isEmpty()) {
-            System.out.println("No Transactions for account" + account);
+            System.out.println("No Transactions for account" + account.getAccountId());
             return;
         }
         List<Transaction> scopedTransactions =
                 filteredAndSortedTransactions.stream().filter(transaction -> transaction.getTimestamp().isAfter(fromDate) && (transaction.getTimestamp().isBefore(toDate) || transaction.getTimestamp().isEqual(toDate))).toList();
         if (scopedTransactions.isEmpty()) {
-            System.out.println("No Transactions for account" + account + " in the specified date range.");
+            System.out.println("No Transactions for account" + account.getAccountId() + " in the specified date range.");
             return;
         }
         header(account);
         scopedTransactions.forEach(transaction -> transaction.toStatement(account));
+        printSeparatorLine(267);
     }
 
     public List<Account> loadUserAccounts(User user) {
