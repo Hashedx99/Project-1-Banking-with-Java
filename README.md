@@ -1,10 +1,24 @@
-# Banking System – README
+# Shadow Moses Banking System
 
 ## Overview
 
 This project is a console-based banking management system built in Java. It includes login authentication, customer and
 banker roles, checking and savings accounts, overdraft protection, file-based storage, transaction history, debit card
 limits, fraud detection, and date-range transaction filtering.
+
+---
+
+## Pride Points
+
+- Thoughtful file design inspired by NoSQL principles
+- Authentication with salted password hashing
+- Clear separation of concerns with FileHandler interfaces
+- Effective use of OOP principles like inheritance and polymorphism
+- Comprehensive unit tests covering core functionality
+- User-friendly console interface
+- Transactions are performed using a proper sequence of objects: debit card initiates transaction, account class
+  handles it
+- Detailed planning and user story tracking via Trello
 
 ---
 
@@ -156,20 +170,6 @@ All read and write operations follow defensive patterns:
 - Natural partitioning by customer
 - Scales well with large transaction histories
 - Simple debugging with human-readable JSON
-
----
-
-## Pride Points
-
-- Thoughtful file design inspired by NoSQL principles
-- Authentication with salted password hashing
-- Clear separation of concerns with FileHandler interfaces
-- Effective use of OOP principles like inheritance and polymorphism
-- Comprehensive unit tests covering core functionality
-- User-friendly console interface
-- Transactions are performed using a proper sequence of objects: debit card initiates transaction, account class 
-  handles it
-- Detailed planning and user story tracking via Trello
 
 ---
 
