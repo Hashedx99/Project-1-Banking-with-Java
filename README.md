@@ -9,13 +9,16 @@ limits, fraud detection, and date-range transaction filtering.
 ---
 
 ## Pride Points
-
-- Thoughtful file design inspired by NoSQL principles
+- The solution follows a managed process, the application creates a session which requires user authentication and
+  contains all user data for the session. everything is done through the session object which manages state and uses
+  the auth object to execute operations. banking operations are executed from the session object, which calls the
+  selected accounts debit card to perform the operation. this ensures a clear flow of control and separation of concerns.
+- File-based storage designed with a MongoDB-inspired document structure for scalability and flexibility and ease of
+  querying.
 - Authentication with salted password hashing
 - Clear separation of concerns with FileHandler interfaces
 - Effective use of OOP principles like inheritance and polymorphism
 - Comprehensive unit tests covering core functionality
-- User-friendly console interface
 - Transactions are performed using a proper sequence of objects: debit card initiates transaction, account class
   handles it
 - Detailed planning and user story tracking via Trello
