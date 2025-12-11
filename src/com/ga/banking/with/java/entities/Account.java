@@ -1,14 +1,23 @@
 package com.ga.banking.with.java.entities;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 import com.ga.banking.with.java.enums.AccountStatus;
 import com.ga.banking.with.java.enums.AccountType;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
-public class Account {
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.EXISTING_PROPERTY,
+        property = "accountType",
+        visible = true
+)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = SavingsAccount.class, name = "Savings"),
+        @JsonSubTypes.Type(value = CheckingAccount.class, name = "Checking")
+})
+public abstract class Account {
     @JsonProperty("accountId")
     private String accountId;
 

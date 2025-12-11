@@ -1,14 +1,6 @@
 package com.ga.banking.with.java.service;
 
-import com.ga.banking.with.java.entities.Account;
-import com.ga.banking.with.java.entities.Banker;
-import com.ga.banking.with.java.entities.Customer;
-import com.ga.banking.with.java.entities.DebitCard;
-import com.ga.banking.with.java.entities.MasterCard;
-import com.ga.banking.with.java.entities.MasterCardPlatinum;
-import com.ga.banking.with.java.entities.MasterCardTitanium;
-import com.ga.banking.with.java.entities.Transaction;
-import com.ga.banking.with.java.entities.User;
+import com.ga.banking.with.java.entities.*;
 import com.ga.banking.with.java.enums.AccountType;
 import com.ga.banking.with.java.enums.Status;
 import com.ga.banking.with.java.enums.UserRole;
@@ -124,18 +116,13 @@ public class Auth {
     public void createUserForCustomer() {
         System.out.println("Customer username: ");
         String username = input.nextLine();
-
-        // Check if a file with the username already exists
-        Path dataPath = Paths.get("Data");
-        Path customersPath = dataPath.resolve("Customers");
-        Path bankersPath = dataPath.resolve("Bankers");
-
-        username = handleUsernameUniqueness(username, "Customer", customersPath, bankersPath);
+        username = handleUsernameUniqueness(username, "Customer");
         String salt = generateSalt();
         CommonUtil.printSeparatorLine();
         System.out.println("Customer First Name: ");
         String firstName = input.nextLine();
         CommonUtil.printSeparatorLine();
+        System.out.println("Customer Last Name: ");
         System.out.println("Customer Last Name: ");
         String lastName = input.nextLine();
         CommonUtil.printSeparatorLine();
@@ -169,22 +156,7 @@ public class Auth {
     public void createUserForBanker() {
         System.out.println("Banker username: ");
         String username = input.nextLine();
-        Path dataPath = Paths.get("Data");
-        Path bankersPath = dataPath.resolve("Bankers");
-        while (true) {
-            String finalUsername = username;
-            File[] existingFiles =
-                    bankersPath.toFile().listFiles(file -> file.getName().startsWith("Banker-" + finalUsername +
-                            "-"));
-            if (existingFiles != null && existingFiles.length > 0) {
-                System.out.println("Error: A banker with the username '" + username + "' already exists. Please try" +
-                        " again.");
-                System.out.println("Banker username: ");
-                username = input.nextLine();
-            } else {
-                break;
-            }
-        }
+        username = handleUsernameUniqueness(username, "Banker");
         String salt = generateSalt();
         CommonUtil.printSeparatorLine();
         System.out.println("Banker First Name: ");
@@ -251,13 +223,13 @@ public class Auth {
 
 
     public Account getAccountById(String accountId) {
-        Path accountsPath = Paths.get("Data").resolve("Accounts");
+        Path accountsPath = Paths.get(System.getProperty("user.dir", "."), "Data", "Accounts");
         if (!Files.exists(accountsPath) || !Files.isDirectory(accountsPath)) {
             return null;
         }
 
         File[] files = accountsPath.toFile().listFiles();
-        if (files == null || files.length == 0) {
+        if (files == null) {
             return null;
         }
 
@@ -379,14 +351,12 @@ public class Auth {
             return customer;
         }
         List<File> fileList = validatePathAndFiles(bankersPath, username, UserRole.Banker);
-        Banker banker =
-                (Banker) fileList.stream().filter(file -> {
-                            Banker tmpBanker = (Banker) bankerFileHandler.readFromFile(file);
-                            return validatePassword(password, tmpBanker.getSalt(),
-                                    tmpBanker.getPasswordHash());
-                        }).findFirst().map(bankerFileHandler::readFromFile)
-                        .orElse(null);
-        return banker;
+        return fileList.stream().filter(file -> {
+                    Banker tmpBanker = (Banker) bankerFileHandler.readFromFile(file);
+                    return validatePassword(password, tmpBanker.getSalt(),
+                            tmpBanker.getPasswordHash());
+                }).findFirst().map(bankerFileHandler::readFromFile)
+                .orElse(null);
     }
 
     // Functional Methods
@@ -463,7 +433,7 @@ public class Auth {
                 case "1" -> {
                     System.out.println("Enter initial deposit amount for Savings Account: ");
                     double initialDeposit = Double.parseDouble(input.nextLine().trim());
-                    Account savingsAccount = new Account(customer.getUserId(), AccountType.Savings, initialDeposit);
+                    Account savingsAccount = new SavingsAccount(customer.getUserId(), initialDeposit);
                     accounts.add(savingsAccount);
                     System.out.println("Savings Account created for customer " + customer.getFirstName() + " " +
                             customer.getLastName());
@@ -472,7 +442,7 @@ public class Auth {
                 case "2" -> {
                     System.out.println("Enter initial deposit amount for Checking Account: ");
                     double initialDeposit = Double.parseDouble(input.nextLine().trim());
-                    Account checkingAccount = new Account(customer.getUserId(), AccountType.Checking, initialDeposit);
+                    Account checkingAccount = new CheckingAccount(customer.getUserId(), initialDeposit);
                     accounts.add(checkingAccount);
                     System.out.println("Checking Account created for customer " + customer.getFirstName() + " " +
                             customer.getLastName());
@@ -481,11 +451,11 @@ public class Auth {
                 case "3" -> {
                     System.out.println("Enter initial deposit amount for Savings Account: ");
                     double savingsInitialDeposit = Double.parseDouble(input.nextLine().trim());
-                    Account savingsAccount = new Account(customer.getUserId(), AccountType.Savings,
+                    Account savingsAccount = new SavingsAccount(customer.getUserId(),
                             savingsInitialDeposit);
                     System.out.println("Enter initial deposit amount for Checking Account: ");
                     double checkingInitialDeposit = Double.parseDouble(input.nextLine().trim());
-                    Account checkingAccount = new Account(customer.getUserId(), AccountType.Checking,
+                    Account checkingAccount = new CheckingAccount(customer.getUserId(),
                             checkingInitialDeposit);
                     accounts.add(savingsAccount);
                     accounts.add(checkingAccount);
@@ -623,8 +593,10 @@ public class Auth {
         return newPassword;
     }
 
-    private static String handleUsernameUniqueness(String username, String userType, Path customersPath,
-                                                   Path bankersPath) {
+    private static String handleUsernameUniqueness(String username, String userType) {
+        Path dataPath = Paths.get("Data");
+        Path customersPath = dataPath.resolve("Customers");
+        Path bankersPath = dataPath.resolve("Bankers");
         while (true) {
             String finalUsername = username;
             File[] customerExistingFiles =
