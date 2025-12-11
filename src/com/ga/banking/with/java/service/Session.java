@@ -9,8 +9,10 @@ import com.ga.banking.with.java.enums.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Scanner;
+import java.util.SortedMap;
 import java.util.UUID;
 
+import static com.ga.banking.with.java.helpers.CommonUtil.printSeparatorLine;
 import static com.ga.banking.with.java.helpers.CommonUtil.waitForUserInput;
 
 public class Session {
@@ -76,7 +78,7 @@ public class Session {
         } else {
             System.out.println("User is not authenticated.");
         }
-        waitForUserInput();
+        waitForUserInput(input);
     }
 
     private void bankerMenu(Auth auth, Scanner input) {
@@ -114,6 +116,37 @@ public class Session {
 
 
     private void customerMenu(Auth auth, Scanner input) {
+        System.out.println("Accounts Summary:");
+        printSeparatorLine();
+        System.out.printf("%-36s | %-10s | %14s | %-10s | %-12s%n", "Account ID", "Type", "Balance", "Status", "Card " +
+                "Type");
+        printSeparatorLine();
+
+        if (accounts == null || accounts.isEmpty()) {
+            System.out.println("No accounts found.");
+        } else {
+            for (Account account : accounts) {
+                String cardType = null;
+                if (account.getAccountType() == AccountType.Savings && savingsDebitCard != null &&
+                        savingsDebitCard.getAccountNumber().equals(account.getAccountId())) {
+                    cardType = savingsDebitCard.getCardType().getCard();
+                } else if (account.getAccountType() == AccountType.Checking && checkingDebitCard != null &&
+                        checkingDebitCard.getAccountNumber().equals(account.getAccountId())) {
+                    cardType = checkingDebitCard.getCardType().getCard();
+                }
+
+                String balanceStr = String.format("$%,.2f", account.getBalance());
+                String cardTypeStr = (cardType == null) ? "-" : cardType;
+
+                System.out.printf("%-36s | %-10s | %14s | %-10s | %-12s%n",
+                        account.getAccountId(),
+                        account.getAccountType(),
+                        balanceStr,
+                        account.getStatus(),
+                        cardTypeStr);
+            }
+        }
+        printSeparatorLine();
         System.out.println("Customer Menu:");
         System.out.println("Choose an option:");
         System.out.println("1. View My Accounts");
@@ -155,12 +188,15 @@ public class Session {
                         System.out.println("Operation cancelled, returning to menu.");
                         return;
                     }
-                    case "1" -> auth.getAccountTransactions(this.user, selectedAccount, LocalDateTime.now().minusDays(7),
-                            LocalDateTime.now());
-                    case "2" -> auth.getAccountTransactions(this.user, selectedAccount, LocalDateTime.now().minusDays(30),
-                            LocalDateTime.now());
-                    case "3" -> auth.getAccountTransactions(this.user, selectedAccount, LocalDateTime.now().minusDays(90),
-                            LocalDateTime.now());
+                    case "1" ->
+                            auth.getAccountTransactions(this.user, selectedAccount, LocalDateTime.now().minusDays(7),
+                                    LocalDateTime.now());
+                    case "2" ->
+                            auth.getAccountTransactions(this.user, selectedAccount, LocalDateTime.now().minusDays(30),
+                                    LocalDateTime.now());
+                    case "3" ->
+                            auth.getAccountTransactions(this.user, selectedAccount, LocalDateTime.now().minusDays(90),
+                                    LocalDateTime.now());
                     case "4" -> {
                         while (true) {
                             System.out.println("Enter start date (YYYY-MM-DD):");

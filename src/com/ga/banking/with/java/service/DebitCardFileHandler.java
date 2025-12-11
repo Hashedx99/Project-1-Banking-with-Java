@@ -37,7 +37,7 @@ public class DebitCardFileHandler implements FileHandler {
             Path dataPath = Paths.get("Data");
             Path debitCardsPath = dataPath.resolve("DebitCards");
 
-            createDirectoriesAndWriteFile((String) fileContent, fileName, dataPath, debitCardsPath, false);
+            createDirectoriesAndWriteFile((String) fileContent, fileName, dataPath, debitCardsPath);
         } catch (Exception e) {
             System.out.println("An error occurred while writing to the Debit Cards file.");
             System.out.println(e.getMessage());

@@ -51,7 +51,7 @@ public class TransactionFileHandler implements FileHandler {
             Path dataPath = Paths.get("Data", "Transactions");
             Path userTransactionsPath = dataPath.resolve(id);
 
-            createDirectoriesAndWriteFile((String) fileContent, fileName, dataPath, userTransactionsPath, false);
+            createDirectoriesAndWriteFile((String) fileContent, fileName, dataPath, userTransactionsPath);
         } catch (Exception e) {
             System.out.println("An error occurred while writing to the Transactions file.");
             System.out.println(e.getMessage());

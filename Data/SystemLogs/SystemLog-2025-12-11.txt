@@ -1,0 +1,3 @@
+Fraud Alert: failed login attempt for username: hamza at 2025-12-11 14:21:28failed attempts: 1
+Fraud Alert: failed login attempt for username: hamza at 2025-12-11 14:22:21 Failed attempt count: 2
+Fraud Alert: failed login attempt for username: hamza at 2025-12-11 14:22:34 Failed attempt count: 3

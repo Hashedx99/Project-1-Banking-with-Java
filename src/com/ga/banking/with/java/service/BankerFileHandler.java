@@ -36,7 +36,7 @@ public class BankerFileHandler implements FileHandler {
             Path dataPath = Paths.get("Data");
             Path bankersPath = dataPath.resolve("Bankers");
 
-            createDirectoriesAndWriteFile((String) fileContent, fileName, dataPath, bankersPath, false);
+            createDirectoriesAndWriteFile((String) fileContent, fileName, dataPath, bankersPath);
         } catch (Exception e) {
             System.out.println("An error occurred while writing to the banker file.");
             System.out.println(e.getMessage());

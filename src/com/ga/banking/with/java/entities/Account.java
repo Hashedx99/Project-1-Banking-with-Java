@@ -129,7 +129,7 @@ public class Account {
         StringBuilder sb = new StringBuilder();
         sb.append("Account ").append(this.accountId)
                 .append(" | Type: ").append(this.accountType)
-                .append(" | Balance: ").append(this.balance)
+                .append(" | Balance: $").append(this.balance)
                 .append(" | Status: ").append(this.status);
 
         if (this.overdraftCount > 0) {

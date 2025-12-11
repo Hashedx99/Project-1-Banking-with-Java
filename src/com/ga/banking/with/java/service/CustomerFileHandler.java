@@ -29,14 +29,12 @@ public class CustomerFileHandler implements FileHandler {
             System.out.println("Invalid file content for customer. Expected a JSON string.");
             return false;
         }
-        System.out.println("Writing customer file for: " + customerName + " with ID: " + customerId);
-        System.out.println(fileContent);
         try {
             String fileName = "Customer-" + customerName + "-" + customerId + ".json";
             Path dataPath = Paths.get("Data");
             Path customersPath = dataPath.resolve("Customers");
 
-            createDirectoriesAndWriteFile((String) fileContent, fileName, dataPath, customersPath, false);
+            createDirectoriesAndWriteFile((String) fileContent, fileName, dataPath, customersPath);
         } catch (Exception e) {
             System.out.println("An error occurred while writing to the customer file.");
             System.out.println(e.getMessage());

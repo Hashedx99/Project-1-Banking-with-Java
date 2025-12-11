@@ -8,10 +8,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 public class CommonUtil {
     public static void printSeparatorLine() {
@@ -22,7 +22,7 @@ public class CommonUtil {
     }
 
     public static void createDirectoriesAndWriteFile(String fileContent, String fileName, Path dataPath,
-                                                     Path nestedDataPath, boolean shouldAppend) throws IOException {
+                                                     Path nestedDataPath) throws IOException {
         if (Files.notExists(dataPath)) {
             Files.createDirectory(dataPath);
         }
@@ -34,7 +34,7 @@ public class CommonUtil {
         Path path = nestedDataPath == null ? dataPath.resolve(fileName) : nestedDataPath.resolve(fileName);
 
 
-        try (BufferedWriter writer = Files.newBufferedWriter(path, shouldAppend ? StandardOpenOption.APPEND : StandardOpenOption.CREATE)) {
+        try (BufferedWriter writer = Files.newBufferedWriter(path)) {
             writer.write(fileContent);
             writer.flush();
         }
@@ -55,12 +55,8 @@ public class CommonUtil {
         return accounts;
     }
 
-    public static void waitForUserInput() {
+    public static void waitForUserInput(Scanner input) {
         System.out.println("Press Enter to continue...");
-        try {
-            System.in.read();
-        } catch (IOException e) {
-            // Ignore
-        }
+        input.nextLine();
     }
 }

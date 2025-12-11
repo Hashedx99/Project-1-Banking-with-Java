@@ -91,13 +91,12 @@ public class Transaction {
         String time = (timestamp != null) ? timestamp.format(fmt) : "";
         String type = (transactionType != null) ? transactionType.name() : "";
         String statusStr = (status != null) ? status.name() : "";
-        String amountStr = String.format("%,.2f", amount);
+        String amountStr = String.format("$%,.2f", amount);
         String toId = (toAccountId != null) ? toAccountId : "";
         String fromId = (fromAccountId != null) ? fromAccountId + (toId.isBlank() ? "" : " -->") : "";
-
-        String fromBal = (fromAccountPostTransactionBalance != null) ? String.format("%,.2f",
+        String fromBal = (fromAccountPostTransactionBalance != null) ? String.format("$%,.2f",
                 fromAccountPostTransactionBalance) : "";
-        String toBal = (toAccountPostTransactionBalance != null) ? String.format("%,.2f",
+        String toBal = (toAccountPostTransactionBalance != null) ? String.format("$%,.2f",
                 toAccountPostTransactionBalance) : "";
 
         String desc = (description != null && !description.isEmpty()) ? description : "";
